@@ -12,7 +12,9 @@
 #include <gem.h>
 
 #include "dalmatianlib.h"
-#include "script.h" /* imports the DIALOGUE_LINES global var */
+
+/* Import the CHARACTER_MAP and DIALOGUE_LINES global vars: */
+#include "script.h"
 
 /*
  * Blanks out the entire screen. Requires that MAX_X and MAX_Y already be
@@ -109,5 +111,9 @@ void
 NextBeat(Script *script)
 {
 	script->beat_index++;
-	snprintf(script->line1, sizeof(script->line1), "%s", DIALOGUE_LINES[script->beat_index].line);
+	snprintf(
+		script->line1, sizeof(script->line1),
+		"%s: %s",
+		CHARACTER_MAP[DIALOGUE_LINES[script->beat_index].character],
+		DIALOGUE_LINES[script->beat_index].line);
 }

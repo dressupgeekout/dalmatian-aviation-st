@@ -1,21 +1,30 @@
 # DALMATIAN AVIATION ST
 # Dialogue script compiler
 
-(def ACCUMULATOR @[])
+(def __ACCUMULATOR @[]) # list of beats: [speaker, line]
+(def __CHARACTERS @[]) # tuples (speaker-name, id)
 
-(def KRISSANY 1) 
-(def WHITNEY 2) 
-### XXX (string/from-bytes KRISSANY)
+(defn declare-character
+  [name id]
+  (array/push __CHARACTERS (tuple name id)))
+
+########## ########## ##########
+
+(declare-character "KRISSANY" 0)
+(declare-character "WHITNEY" 1)
+(declare-character "BORIS" 2)
 
 (defn krissany
   [line]
-  (array/push ACCUMULATOR 
-    (string/format "%s" line)))
+  (array/push __ACCUMULATOR  ["KRISSANY" line]))
 
 (defn whitney
   [line]
-  (array/push ACCUMULATOR
-    (string/format "%s" line)))
+  (array/push __ACCUMULATOR ["WHITNEY" line]))
+
+(defn boris
+  [line]
+  (array/push __ACCUMULATOR ["BORIS" line]))
 
 ########## ########## ##########
 
@@ -24,13 +33,16 @@
     (krissany `This is the first line of dialogue!`)
     (krissany `This is another line of dialogue. I am awesome.`)
     (whitney `Are you sure about that?`)
-    (krissany `Sure I'm sure. I know things!`))
+    (krissany `Sure I'm sure. I know things!`)
+    (boris `Wot's this then?`)
+    (krissany `Beats me!`))
 
 ########## ########## ##########
 
 (defn compiler-main
   []
   (do-the-script)
+
   (print ```
 /*
  * AUTOMATICALLY GENERATED, DO NOT EDIT.
@@ -39,17 +51,24 @@
 #ifndef DALMATIAN_SCRIPT_H
 #define DALMATIAN_SCRIPT_H
 
-#include <stdint.h>
-
 #include "dialogue.h"
 
-Dialogue DIALOGUE_LINES[] = {
-  ```)
-  (print ```
-  ```)
+```)
 
-  (loop [line :in ACCUMULATOR]
-    (printf "\t{%d, %q}," 0 line))
+  (let [characters-by-id (sorted-by (fn [entry] (get entry 1)) __CHARACTERS)]
+    (loop [[name id] :in characters-by-id]
+      (printf "#define CHAR_%s %d" name id))
+
+    (print `const char *CHARACTER_MAP[] = {`)
+
+    (loop [[name id] :in characters-by-id]
+      (printf "\t%q," name)))
+
+  (print `};`)
+  (print `Dialogue DIALOGUE_LINES[] = {`)
+
+  (loop [[speaker line] :in __ACCUMULATOR]
+    (printf "\t{CHAR_%s, %q}," speaker line))
 
   (print ```
 };

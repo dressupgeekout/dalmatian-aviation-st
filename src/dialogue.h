@@ -13,6 +13,7 @@ struct Dialogue {
 typedef struct Dialogue Dialogue;
 
 /* GLOBAL VARIABLES */
+extern const char *CHARACTER_MAP[];
 extern Dialogue DIALOGUE_LINES[];
 
 #endif /* DIALOGUE_H */
