@@ -30,12 +30,12 @@
 
 (defn do-the-script
   []
-    (krissany `This is the first line of dialogue!`)
-    (krissany `This is another line of dialogue. I am awesome.`)
-    (whitney `Are you sure about that?`)
-    (krissany `Sure I'm sure. I know things!`)
-    (boris `Wot's this then?`)
-    (krissany `Beats me!`))
+  (krissany `This is the first line of dialogue!`)
+  (krissany `This is another line of dialogue. I am awesome.`)
+  (whitney `Are you sure about that?`)
+  (krissany `Sure I'm sure. I know things!`)
+  (boris `Wot's this then?`)
+  (krissany `Beats me!`))
 
 ########## ########## ##########
 

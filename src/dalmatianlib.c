@@ -61,10 +61,16 @@ AwaitScancode(void)
 void
 BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
 {
+	char buf[80];
 	FILE *fp = fopen(path, "rb");
+	if (!fp) {
+		snprintf(buf, sizeof(buf), FA_ERROR "[BlitBitmap: couldn't fopen:|%s][OK]", path);
+		form_alert(1, buf);
+		return;
+	}
 	fseek(fp, 0, SEEK_END);
 	uint32_t fsize = ftell(fp);
-	int16_t *bitmap = malloc(fsize);
+	int16_t *bitmap = malloc(fsize); /* XXX check for error */
 	rewind(fp);
 	fread(bitmap, fsize, 1, fp);
 	fclose(fp);
