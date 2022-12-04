@@ -65,6 +65,7 @@
       (printf "\t%q," name)))
 
   (print `};`)
+  (printf "#define NUM_BEATS %d" (length __ACCUMULATOR))
   (print `Dialogue DIALOGUE_LINES[] = {`)
 
   (loop [[speaker line] :in __ACCUMULATOR]

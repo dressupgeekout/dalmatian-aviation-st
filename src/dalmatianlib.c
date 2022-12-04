@@ -151,6 +151,7 @@ CloseScript(Script *script)
 void
 NextBeat(Script *script)
 {
+	if (script->beat_index >= (NUM_BEATS-1)) return;
 	script->beat_index++;
 	snprintf(
 		script->line1, sizeof(script->line1),
