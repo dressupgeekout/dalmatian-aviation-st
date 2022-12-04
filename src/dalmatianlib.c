@@ -54,6 +54,41 @@ AwaitScancode(void)
 
 
 /*
+ * Blits the entire picture somewhere
+ *
+ * XXX a different function should be used to blit a "quad"
+ */
+void
+BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
+{
+	FILE *fp = fopen(path, "rb");
+	fseek(fp, 0, SEEK_END);
+	uint32_t fsize = ftell(fp);
+	int16_t *bitmap = malloc(fsize);
+	rewind(fp);
+	fread(bitmap, fsize, 1, fp);
+	fclose(fp);
+
+	MFDB src;
+	bzero(&src, sizeof(src));
+	src.fd_addr = bitmap;
+	src.fd_w = w;
+	src.fd_h = h;
+	src.fd_wdwidth = w/16;
+	src.fd_stand = 1;
+	src.fd_nplanes = 1;
+
+	MFDB dest;
+	bzero(&dest, sizeof(dest));
+
+	int16_t rects[] = {0, 0, w, h, x, y, x+w, y+h};
+	int16_t color_index[] = {0, 1};
+	vrt_cpyfm(GAME.workstation, VR_MODE_REPLACE, rects, &src, &dest, color_index);
+	free(bitmap);
+}
+
+
+/*
  * The Script should have already been advanced to the desired beat.
  */
 void

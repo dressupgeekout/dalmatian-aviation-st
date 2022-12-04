@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define DALMATIAN_VERSION "0.0.0a"
+#define DALMATIAN_VERSION "v0.0.0a"
 
 /* Keyboard scancodes that aren't macro'd already for some reason */
 #define K_F1 59
@@ -23,6 +23,9 @@
 #define K_F9 67
 #define K_F10 68
 #define K_SPACE 57
+
+/* Raster operation options that aren't macro'd already */
+#define VR_MODE_REPLACE 1
 
 /*
  * Global game status.
@@ -81,6 +84,7 @@ void Blackout(void);
 void Whiteout(void);
 
 uint8_t AwaitScancode(void);
+void BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h);
 
 void CharacterSay(const struct Script *script);
 Script *LoadScript(void);

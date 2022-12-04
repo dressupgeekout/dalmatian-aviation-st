@@ -107,12 +107,15 @@ DoTitleScreen(void)
 {
 	Whiteout();
 
-	const int x = 100;
+	BlitBitmap("BLIMP2.BW", 225, 100, 400, 217);
+
+	const int x = 50;
 	v_gtext(GAME.workstation, x, 100, "DALMATIAN AVIATION ST");
 	v_gtext(GAME.workstation, x, 124, "by Dressupgeekout");
 	v_gtext(GAME.workstation, x, 200, " F1 - PLAY");
 	v_gtext(GAME.workstation, x, 224, "F10 - QUIT");
 
+	/* Await player choice */
 	enum TitleScreenChoice choice = TITLE_SCREEN_UNDEFINED;
 	int16_t scancode;
 
@@ -251,7 +254,7 @@ main(void)
 
 	GAME.status = APP_STATUS_OK;
 
-	bool want_intro = false; /* XXX command-line option */
+	bool want_intro = true; /* XXX command-line option */
 	TitleScreenChoice choice;
 
 	if (want_intro) {

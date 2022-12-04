@@ -2,4 +2,4 @@
 set -ex
 make
 cp DALMATIA.PRG ~/atariroot/DALMATIA
-rsync -avr ./script/ ~/atariroot/DALMATIA/SCRIPT/
+cp blimp2.bw ~/atariroot/DALMATIA/BLIMP2.BW
