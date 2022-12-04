@@ -116,11 +116,11 @@ CloseScript(struct Script *script)
 void
 NextBeat(struct Script *script)
 {
-	if (!fgets(script->line1, sizeof(script->line1), script->fp)) {
-		// assume EOF for now
+	if (fgets(script->line1, sizeof(script->line1), script->fp)) {
+		script->line1[strlen(script->line1)-2] = '\0';
 	}
-	if (!fgets(script->line2, sizeof(script->line2), script->fp)) {
-		// asume EOF for now
+	if (fgets(script->line2, sizeof(script->line2), script->fp)) {
+		script->line2[strlen(script->line2)-2] = '\0';
 	}
 }
 
