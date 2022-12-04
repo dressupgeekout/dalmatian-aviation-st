@@ -33,7 +33,7 @@ $(PROG): $(OBJS) script.h
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-script.h: script.janet
+script.h: ../tools/script.janet
 	janet $^ > $@
 
 .PHONY: clean
