@@ -22,8 +22,8 @@ struct Game GAME;
 /* Function prototypes */
 static bool enforce_hires(void);
 static void DotsIntro(void);
-static enum TitleScreenChoice DoTitleScreen(void);
-static enum DefaultScreenChoice DoDefaultScreen(void);
+static TitleScreenChoice DoTitleScreen(void);
+static DefaultScreenChoice DoDefaultScreen(void);
 
 static void handle_keyboard(const EVMULT_OUT *events);
 static void handle_mouse(const EVMULT_OUT *events);
@@ -102,7 +102,7 @@ DotsIntro(void)
 /*
  * The player can choose to play the game, or to quit.
  */
-static enum TitleScreenChoice
+static TitleScreenChoice
 DoTitleScreen(void)
 {
 	Whiteout();
@@ -167,12 +167,12 @@ handle_mouse(const EVMULT_OUT *events)
 }
 
 
-static enum DefaultScreenChoice
+static DefaultScreenChoice
 DoDefaultScreen(void)
 {
 	Whiteout();
 
-	GAME.script = LoadScript("TEST01.TXT");
+	GAME.script = LoadScript();
 	NextBeat(GAME.script);
 	CharacterSay(GAME.script);
 
@@ -251,8 +251,8 @@ main(void)
 
 	GAME.status = APP_STATUS_OK;
 
-	bool want_intro = true; /* XXX command-line option */
-	enum TitleScreenChoice choice;
+	bool want_intro = false; /* XXX command-line option */
+	TitleScreenChoice choice;
 
 	if (want_intro) {
 		DotsIntro();

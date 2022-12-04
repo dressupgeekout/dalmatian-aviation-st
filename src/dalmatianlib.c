@@ -12,6 +12,7 @@
 #include <gem.h>
 
 #include "dalmatianlib.h"
+#include "script.h" /* imports the DIALOGUE_LINES global var */
 
 /*
  * Blanks out the entire screen. Requires that MAX_X and MAX_Y already be
@@ -54,7 +55,7 @@ AwaitScancode(void)
  * The Script should have already been advanced to the desired beat.
  */
 void
-CharacterSay(const struct Script *script)
+CharacterSay(const Script *script)
 {
 	static char buf1[80]; 
 	static char buf2[80]; 
@@ -80,20 +81,12 @@ CharacterSay(const struct Script *script)
 /*
  * Loads a script from disk.
  */
-struct Script *
-LoadScript(const char *name)
+Script *
+LoadScript(void)
 {
-	struct Script *script = malloc(sizeof(struct Script));
-
-	snprintf(script->filename, sizeof(script->filename), "%s", name);
-	snprintf(script->line1, sizeof(script->line1), "%s", "");
-	snprintf(script->line2, sizeof(script->line1), "%s", "");
-
-	char path[PATH_MAX];
-	snprintf(path, PATH_MAX, "%s/%s", SCRIPT_DIR, name);
-	FILE *fp = fopen(path, "r");
-	script->fp = fp;
-
+	Script *script = malloc(sizeof(Script));
+	bzero(script, sizeof(*script));
+	script->beat_index = -1; /* Such that the subsequent NextBeat() goes to 0 */
 	return script;
 }
 
@@ -102,9 +95,8 @@ LoadScript(const char *name)
  * Closes the script file descriptor, and frees memory.
  */
 void
-CloseScript(struct Script *script)
+CloseScript(Script *script)
 {
-	fclose(script->fp);
 	free(script);
 	script = NULL;
 }
@@ -114,13 +106,8 @@ CloseScript(struct Script *script)
  * Loads the next line of dialogue into the Script.
  */
 void
-NextBeat(struct Script *script)
+NextBeat(Script *script)
 {
-	if (fgets(script->line1, sizeof(script->line1), script->fp)) {
-		script->line1[strlen(script->line1)-2] = '\0';
-	}
-	if (fgets(script->line2, sizeof(script->line2), script->fp)) {
-		script->line2[strlen(script->line2)-2] = '\0';
-	}
+	script->beat_index++;
+	snprintf(script->line1, sizeof(script->line1), "%s", DIALOGUE_LINES[script->beat_index].line);
 }
-

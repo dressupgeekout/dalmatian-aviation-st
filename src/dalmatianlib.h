@@ -10,7 +10,6 @@
 #include <stdio.h>
 
 #define DALMATIAN_VERSION "0.0.0a"
-#define SCRIPT_DIR "script"
 
 /* Keyboard scancodes that aren't macro'd already for some reason */
 #define K_F1 59
@@ -25,11 +24,6 @@
 #define K_F10 68
 #define K_SPACE 57
 
-#define CHAR_KRISSANY "KRISSANY"
-#define CHAR_WHITNEY "WHITNEY"
-#define CHAR_INVALID "__INVALID__"
-
-
 /*
  * Global game status.
  */
@@ -37,7 +31,7 @@ enum AppStatus {
 	APP_STATUS_OK,
 	APP_STATUS_WANT_QUIT
 };
-
+typedef enum AppStatus AppStatus;
 
 /*
  * The possible player-choices from the title screen.
@@ -47,7 +41,7 @@ enum TitleScreenChoice {
 	TITLE_SCREEN_WANT_PLAY,
 	TITLE_SCREEN_WANT_QUIT
 };
-
+typedef enum TitleScreenChoice TitleScreenChoice;
 
 /*
  * The possible player-choices from the default screen.
@@ -56,17 +50,19 @@ enum DefaultScreenChoice {
 	DEFAULT_SCREEN_UNDEFINED,
 	DEFAULT_SCREEN_WANT_QUIT
 };
+typedef enum DefaultScreenChoice DefaultScreenChoice;
 
 
 /*
  * The currently loaded script, and some metadata.
  */
 struct Script {
-	char filename[12];
-	FILE *fp;
+	char title[16];
 	char line1[80];
 	char line2[80];
+	int8_t beat_index;
 };
+typedef struct Script Script;
 
 /*
  * The whole game
@@ -76,9 +72,10 @@ struct Game {
 	int16_t max_x;
 	int16_t max_y;
 	char debug_lines[5][128];
-	enum AppStatus status;
-	struct Script *script;
+	AppStatus status;
+	Script *script;
 };
+typedef struct Game Game;
 
 void Blackout(void);
 void Whiteout(void);
@@ -86,11 +83,11 @@ void Whiteout(void);
 uint8_t AwaitScancode(void);
 
 void CharacterSay(const struct Script *script);
-struct Script *LoadScript(const char *name);
-void CloseScript(struct Script *script);
-void NextBeat(struct Script *script);
+Script *LoadScript(void);
+void CloseScript(Script *script);
+void NextBeat(Script *script);
 
 /* GLOBAL VARIABLES */
-extern struct Game GAME;
+extern Game GAME;
 
 #endif /* DALMATIANLIB_H */

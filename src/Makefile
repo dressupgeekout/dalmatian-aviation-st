@@ -20,8 +20,11 @@ SRCS+=	main.c
 OBJS=	$(patsubst %.c,%.o,$(SRCS))
 PROG=	DALMATIA.PRG
 
-$(PROG): $(OBJS)
-	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
+.PHONY: all
+all: script.h $(PROG)
+
+$(PROG): $(OBJS) script.h
+	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
 	$(STRIP) $@
 	@echo ==============================
 	wc -c $@
@@ -30,6 +33,9 @@ $(PROG): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+script.h: script.janet
+	janet $^ > $@
+
 .PHONY: clean
 clean:
-	rm -f $(PROG) $(OBJS)
+	rm -f $(PROG) $(OBJS) script.h
