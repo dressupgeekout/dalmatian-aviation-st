@@ -17,21 +17,16 @@
 /* ********** */
 
 /* GLOBALS */
-int16_t MAX_X;
-int16_t MAX_Y;
-int16_t WORKSTATION;
-char DEBUG_LINES[4][128];
-enum AppStatus APP_STATUS;
-struct Script *SCRIPT;
+struct Game GAME;
 
 /* Function prototypes */
 static bool enforce_hires(void);
-static void dots_intro(void);
+static void DotsIntro(void);
 static enum TitleScreenChoice DoTitleScreen(void);
 static enum DefaultScreenChoice DoDefaultScreen(void);
 
-static void handle_keyboard(EVMULT_OUT *events);
-static void handle_mouse(EVMULT_OUT *events);
+static void handle_keyboard(const EVMULT_OUT *events);
+static void handle_mouse(const EVMULT_OUT *events);
 
 /* ********** */
 
@@ -44,12 +39,12 @@ enforce_hires(void)
 	const int16_t EXPECTED_MAXX = 640;
 	const int16_t EXPECTED_MAXY = 400;
 
-	if (MAX_X+1 != EXPECTED_MAXX || MAX_Y+1 != EXPECTED_MAXY) {
+	if (GAME.max_x+1 != EXPECTED_MAXX || GAME.max_y+1 != EXPECTED_MAXY) {
 		char buf[256];
 		snprintf(
 			buf, sizeof(buf),
 			FA_ERROR "[Sorry, Dalmatian Aviation|requires monochrome/hi-res mode.|%dx%d != %dx%d][OK]",
-			MAX_X+1, MAX_Y+1, EXPECTED_MAXX, EXPECTED_MAXY);
+			GAME.max_x+1, GAME.max_y+1, EXPECTED_MAXX, EXPECTED_MAXY);
 		(void)form_alert(1, buf);
 		return false;
 	}
@@ -57,13 +52,14 @@ enforce_hires(void)
 	return true;
 }
 
+
 /*
  * Covers the screen in pseudo-random black dots (animation)
  *
  * XXX all this data prolly belongs in its own header file
  */
 static void
-dots_intro(void)
+DotsIntro(void)
 {
 #define DOT_FRAMES 48
 	int16_t xs[DOT_FRAMES] = {
@@ -87,12 +83,12 @@ dots_intro(void)
 	};
 
 	int i;
-	vsf_color(WORKSTATION, G_BLACK);
-	vsf_interior(WORKSTATION, FIS_SOLID);
+	vsf_color(GAME.workstation, G_BLACK);
+	vsf_interior(GAME.workstation, FIS_SOLID);
 
 	wind_update(BEG_UPDATE);
 	for (i = 0; i < DOT_FRAMES; i++) {
-		v_circle(WORKSTATION, xs[i], ys[i], dot_rs[i]);
+		v_circle(GAME.workstation, xs[i], ys[i], dot_rs[i]);
 		(void)evnt_timer(10); /* Wait 10 ms */
 	}
 	wind_update(END_UPDATE);
@@ -110,10 +106,12 @@ static enum TitleScreenChoice
 DoTitleScreen(void)
 {
 	Whiteout();
-	v_gtext(WORKSTATION, 100, 100, "DALMATIAN AVIATION ST");
-	v_gtext(WORKSTATION, 100, 124, "by Dressupgeekout");
-	v_gtext(WORKSTATION, 100, 200, " F1 - PLAY");
-	v_gtext(WORKSTATION, 100, 224, "F10 - QUIT");
+
+	const int x = 100;
+	v_gtext(GAME.workstation, x, 100, "DALMATIAN AVIATION ST");
+	v_gtext(GAME.workstation, x, 124, "by Dressupgeekout");
+	v_gtext(GAME.workstation, x, 200, " F1 - PLAY");
+	v_gtext(GAME.workstation, x, 224, "F10 - QUIT");
 
 	enum TitleScreenChoice choice = TITLE_SCREEN_UNDEFINED;
 	int16_t scancode;
@@ -138,20 +136,20 @@ DoTitleScreen(void)
 
 
 static void
-handle_keyboard(EVMULT_OUT *events)
+handle_keyboard(const EVMULT_OUT *events)
 {
-	snprintf(DEBUG_LINES[1], sizeof(DEBUG_LINES[1]), "kreturn=%02x", events->emo_kreturn);
-	v_gtext(WORKSTATION, 0, 12+24, DEBUG_LINES[1]);
+	snprintf(GAME.debug_lines[1], sizeof(GAME.debug_lines[1]), "kreturn=%02x", events->emo_kreturn);
+	v_gtext(GAME.workstation, 0, 12+24, GAME.debug_lines[1]);
 
 	uint8_t scancode = (events->emo_kreturn & 0xff00) >> 8;
 
 	switch (scancode) {
 	case K_SPACE:
-		NextBeat(SCRIPT);
-		CharacterSay(SCRIPT);
+		NextBeat(GAME.script);
+		CharacterSay(GAME.script);
 		break;
 	case K_F10:
-		APP_STATUS = APP_STATUS_WANT_QUIT;
+		GAME.status = APP_STATUS_WANT_QUIT;
 		break;
 	default:
 		; /* OK */
@@ -160,12 +158,12 @@ handle_keyboard(EVMULT_OUT *events)
 
 
 static void
-handle_mouse(EVMULT_OUT *events)
+handle_mouse(const EVMULT_OUT *events)
 {
-	snprintf(DEBUG_LINES[2], sizeof(DEBUG_LINES[2]),
+	snprintf(GAME.debug_lines[2], sizeof(GAME.debug_lines[2]),
 		"mx=%d my=%d mbutton=0x%02x    ",
 		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton);
-	v_gtext(WORKSTATION, 0, 24+24+6, DEBUG_LINES[2]);
+	v_gtext(GAME.workstation, 0, 24+24+6, GAME.debug_lines[2]);
 }
 
 
@@ -174,9 +172,9 @@ DoDefaultScreen(void)
 {
 	Whiteout();
 
-	SCRIPT = LoadScript("TEST01.TXT");
-	NextBeat(SCRIPT);
-	CharacterSay(SCRIPT);
+	GAME.script = LoadScript("TEST01.TXT");
+	NextBeat(GAME.script);
+	CharacterSay(GAME.script);
 
 	EVMULT_IN event_in;
 	bzero(&event_in, sizeof(event_in));
@@ -185,7 +183,7 @@ DoDefaultScreen(void)
 	event_in.emi_bmask = LEFT_BUTTON | RIGHT_BUTTON; /* which mouse-buttons to consider */
 	event_in.emi_bstate = 0xf; /* only consider mouse-downs */
 	event_in.emi_m1leave = MO_ENTER; /* "enter the whole screen" means we see every mouse-movement */
-	GRECT rect = {0, 0, MAX_X, MAX_Y};
+	GRECT rect = {0, 0, GAME.max_x, GAME.max_y};
 	event_in.emi_m1 = rect;
 
 	EVMULT_OUT event_out;
@@ -195,8 +193,8 @@ DoDefaultScreen(void)
 	while (!done) {
 		evnt_multi_fast(&event_in, NULL, &event_out);
 
-		snprintf(DEBUG_LINES[0], sizeof(DEBUG_LINES[0]), "emo_events=0x%04x    ", event_out.emo_events);
-		v_gtext(WORKSTATION, 0, 12, DEBUG_LINES[0]);
+		snprintf(GAME.debug_lines[0], sizeof(GAME.debug_lines[0]), "emo_events=0x%04x    ", event_out.emo_events);
+		v_gtext(GAME.workstation, 0, 12, GAME.debug_lines[0]);
 
 		if (event_out.emo_events & MU_KEYBD) {
 			handle_keyboard(&event_out);
@@ -207,8 +205,8 @@ DoDefaultScreen(void)
 		}
 
 		/* Analyze the results of having handled the events. */
-		if (APP_STATUS == APP_STATUS_WANT_QUIT) {
-			CloseScript(SCRIPT);
+		if (GAME.status == APP_STATUS_WANT_QUIT) {
+			CloseScript(GAME.script);
 			done = true;
 		}
 	}
@@ -221,6 +219,8 @@ DoDefaultScreen(void)
 int
 main(void)
 {
+	bzero(&GAME, sizeof(GAME));
+
 	/* Init */
 	(void)appl_init();
 
@@ -229,33 +229,33 @@ main(void)
 	int16_t work_out[64];
 	bzero(work_in, sizeof(work_in));
 	work_in[0] = 1; /* Want a workstation @ current resolution */
-	v_opnvwk(work_in, &WORKSTATION, work_out);
+	v_opnvwk(work_in, &GAME.workstation, work_out);
 
-	if (!WORKSTATION) {
+	if (!GAME.workstation) {
 		(void)appl_exit(); /* appl_exit() itself might fail */
 		return EXIT_FAILURE;
 	}
 
-	MAX_X = work_out[0];
-	MAX_Y = work_out[1];
+	GAME.max_x = work_out[0];
+	GAME.max_y = work_out[1];
 
 	/* Require high-resolution monitor. */
 	if (!enforce_hires()) {
-		v_clsvwk(WORKSTATION);
+		v_clsvwk(GAME.workstation);
 		(void)appl_exit();
 		return EXIT_FAILURE;
 	}
 
 	/* All text will be black henceforth */
-	vst_color(WORKSTATION, G_BLACK);
+	vst_color(GAME.workstation, G_BLACK);
 
-	APP_STATUS = APP_STATUS_OK;
+	GAME.status = APP_STATUS_OK;
 
 	bool want_intro = true; /* XXX command-line option */
 	enum TitleScreenChoice choice;
 
 	if (want_intro) {
-		dots_intro();
+		DotsIntro();
 		choice = DoTitleScreen();
 	} else {
 		choice = TITLE_SCREEN_WANT_PLAY;
@@ -273,7 +273,7 @@ main(void)
 	}
 
 	/* Quit */ 
-	v_clsvwk(WORKSTATION);
+	v_clsvwk(GAME.workstation);
 	(void)appl_exit();
 	return EXIT_SUCCESS;
 }

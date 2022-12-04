@@ -1,4 +1,5 @@
 /*
+ * DALMATIAN AVIATION ST
  * dalmatianlib.c
  */
 
@@ -19,10 +20,10 @@
 void
 Blackout(void)
 {
-	vsf_color(WORKSTATION, G_BLACK);
-	vsf_interior(WORKSTATION, FIS_SOLID); 
-	int16_t args[] = {0, 0, MAX_X, MAX_Y};
-	v_bar(WORKSTATION, args);
+	vsf_color(GAME.workstation, G_BLACK);
+	vsf_interior(GAME.workstation, FIS_SOLID); 
+	int16_t args[] = {0, 0, GAME.max_x, GAME.max_y};
+	v_bar(GAME.workstation, args);
 }
 
 
@@ -32,10 +33,10 @@ Blackout(void)
 void
 Whiteout(void)
 {
-	vsf_color(WORKSTATION, G_WHITE);
-	vsf_interior(WORKSTATION, FIS_SOLID);
-	int16_t args[] = {0, 0, MAX_X, MAX_Y};
-	v_bar(WORKSTATION, args);
+	vsf_color(GAME.workstation, G_WHITE);
+	vsf_interior(GAME.workstation, FIS_SOLID);
+	int16_t args[] = {0, 0, GAME.max_x, GAME.max_y};
+	v_bar(GAME.workstation, args);
 }
 
 
@@ -53,26 +54,26 @@ AwaitScancode(void)
  * The Script should have already been advanced to the desired beat.
  */
 void
-CharacterSay(struct Script *script)
+CharacterSay(const struct Script *script)
 {
 	static char buf1[80]; 
 	static char buf2[80]; 
 
 	const int16_t x = 6;
-	const int16_t y1 = MAX_Y - 48;
-	const int16_t y2 = MAX_Y - 24;
+	const int16_t y1 = GAME.max_y - 48;
+	const int16_t y2 = GAME.max_y - 24;
 
 	/* Clear out both dialogue-lines */
 	memset(buf1, ' ', sizeof(buf1));
 	memset(buf2, ' ', sizeof(buf2));
-	v_gtext(WORKSTATION, x, y1, buf1);
-	v_gtext(WORKSTATION, x, y2, buf2);
+	v_gtext(GAME.workstation, x, y1, buf1);
+	v_gtext(GAME.workstation, x, y2, buf2);
 
 	/* Now fill them with the actual dialogue */
 	snprintf(buf1, sizeof(buf1), "%s", script->line1);
 	snprintf(buf2, sizeof(buf2), "%s", script->line2);
-	v_gtext(WORKSTATION, x, y1, buf1);
-	v_gtext(WORKSTATION, x, y2, buf2);
+	v_gtext(GAME.workstation, x, y1, buf1);
+	v_gtext(GAME.workstation, x, y2, buf2);
 }
 
 
@@ -105,6 +106,7 @@ CloseScript(struct Script *script)
 {
 	fclose(script->fp);
 	free(script);
+	script = NULL;
 }
 
 
@@ -121,3 +123,4 @@ NextBeat(struct Script *script)
 		// asume EOF for now
 	}
 }
+

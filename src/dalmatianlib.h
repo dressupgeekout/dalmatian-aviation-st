@@ -1,4 +1,5 @@
 /*
+ * DALMATIAN AVIATION ST
  * dalmatianlib.h
  */
 
@@ -10,17 +11,6 @@
 
 #define DALMATIAN_VERSION "0.0.0a"
 #define SCRIPT_DIR "script"
-
-/* Forward declarations */
-enum AppStatus;
-
-/* GLOBAL VARIABLES */
-extern int16_t WORKSTATION;
-extern int16_t MAX_X;
-extern int16_t MAX_Y;
-extern char DEBUG_LINES[4][128];
-extern enum AppStatus APP_STATUS;
-extern struct Script *SCRIPT;
 
 /* Keyboard scancodes that aren't macro'd already for some reason */
 #define K_F1 59
@@ -78,13 +68,29 @@ struct Script {
 	char line2[80];
 };
 
+/*
+ * The whole game
+ */
+struct Game {
+	int16_t workstation;
+	int16_t max_x;
+	int16_t max_y;
+	char debug_lines[5][128];
+	enum AppStatus status;
+	struct Script *script;
+};
+
 void Blackout(void);
 void Whiteout(void);
 
 uint8_t AwaitScancode(void);
-void CharacterSay(struct Script *script);
+
+void CharacterSay(const struct Script *script);
 struct Script *LoadScript(const char *name);
 void CloseScript(struct Script *script);
 void NextBeat(struct Script *script);
+
+/* GLOBAL VARIABLES */
+extern struct Game GAME;
 
 #endif /* DALMATIANLIB_H */

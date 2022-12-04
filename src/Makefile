@@ -9,7 +9,7 @@ RANLIB=		$(CROSS)-ranlib
 STRIP=		$(CROSS)-strip
 
 CFLAGS?=	-Wall
-#CFLAGS+=	-Os
+CFLAGS+=	-Os
 LDFLAGS?=	-nostdlib -L$(CURDIR)/lib lib/crt0.o
 LIBS+=		-lgem -lcmini -lgcc
 
