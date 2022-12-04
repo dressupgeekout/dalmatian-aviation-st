@@ -115,6 +115,8 @@ DoTitleScreen(void)
 	v_gtext(GAME.workstation, x, 200, " F1 - PLAY");
 	v_gtext(GAME.workstation, x, 224, "F10 - QUIT");
 
+	v_gtext(GAME.workstation, 0, GAME.max_y-12, DALMATIAN_VERSION);
+
 	/* Await player choice */
 	enum TitleScreenChoice choice = TITLE_SCREEN_UNDEFINED;
 	int16_t scancode;
