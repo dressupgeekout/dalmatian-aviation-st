@@ -61,6 +61,8 @@ enforce_hires(void)
 static void
 DotsIntro(void)
 {
+	(void)graf_mouse(M_OFF, NULL);
+
 #define DOT_FRAMES 48
 	int16_t xs[DOT_FRAMES] = {
 		311, 38, 441, 269, 196, 379, 209, 545, 554, 302, 416, 96, 473, 320, 310,
@@ -116,6 +118,9 @@ DoTitleScreen(void)
 	v_gtext(GAME.workstation, x, 224, "F10 - QUIT");
 
 	v_gtext(GAME.workstation, 0, GAME.max_y, DALMATIAN_VERSION);
+
+	(void)graf_mouse(ARROW, NULL);
+	(void)graf_mouse(M_ON, NULL);
 
 	/* Await player choice */
 	enum TitleScreenChoice choice = TITLE_SCREEN_UNDEFINED;
