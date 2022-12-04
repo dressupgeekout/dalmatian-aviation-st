@@ -20,6 +20,7 @@ AwaitScancode(void)
 		return (uint8_t)((evnt_keybd() & 0xff00) >> 8);
 }
 
+
 void
 CharacterSay(struct Dialogue *dialogue)
 {
@@ -29,9 +30,8 @@ CharacterSay(struct Dialogue *dialogue)
 	const int16_t y = MAX_Y - 24;
 
 	memset(buf, ' ', sizeof(buf));
-	vst_color(vworkstation, G_BLACK);
-	v_gtext(vworkstation, x, y, buf);
+	v_gtext(WORKSTATION, x, y, buf);
 
 	snprintf(buf, sizeof(buf), "%s: %s", dialogue->character, dialogue->line);
-	v_gtext(vworkstation, x, y, buf);
+	v_gtext(WORKSTATION, x, y, buf);
 }

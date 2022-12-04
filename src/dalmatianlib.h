@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 /* GLOBAL VARIABLES */
-extern int16_t vworkstation;
+extern int16_t WORKSTATION;
 extern int16_t MAX_X;
 extern int16_t MAX_Y;
 

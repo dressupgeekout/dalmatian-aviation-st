@@ -22,7 +22,7 @@
 
 int16_t MAX_X;
 int16_t MAX_Y;
-int16_t vworkstation;
+int16_t WORKSTATION;
 
 static void dots_intro(void);
 static void blackout(void);
@@ -40,34 +40,36 @@ static void default_screen(void);
 static void
 dots_intro(void)
 {
-	static int16_t xs[DOT_FRAMES] = {
+	int16_t xs[DOT_FRAMES] = {
 		311, 38, 441, 269, 196, 379, 209, 545, 554, 302, 416, 96, 473, 320, 310,
 		598, 509, 369, 170, 543, 394, 611, 164, 573, 29, 620, 557, 608, 291,
 		587, 205, 47, 446, 24, 406, 356, 553, 102, 306, 118, 77, 406, 470, 146,
 		171, 369, 127, 379,
 	};
 
-	static int16_t ys[DOT_FRAMES] = {
+	int16_t ys[DOT_FRAMES] = {
 		365, 224, 152, 203, 121, 272, 35, 90, 389, 329, 311, 227, 106, 44, 287,
 		107, 399, 207, 242, 260, 378, 158, 338, 170, 9, 275, 309, 261, 46, 56,
 		195, 366, 291, 27, 309, 164, 384, 199, 396, 166, 293, 220, 378, 56, 386,
 		107, 282, 167,
 	};
 
-	static int16_t dot_rs[DOT_FRAMES] = {
+	int16_t dot_rs[DOT_FRAMES] = {
 		19, 36, 2, 22, 27, 15, 16, 20, 12, 12, 23, 27, 13, 3, 34, 9, 34, 38, 18,
 		32, 26, 31, 6, 22, 31, 22, 26, 29, 37, 5, 3, 39, 4, 5, 3, 31, 36, 27,
 		22, 3, 15, 14, 15, 4, 4, 7, 7, 6,
 	};
 
 	int i;
-	vsf_color(vworkstation, G_BLACK);
-	vsf_interior(vworkstation, 1); /* Solid fill pattern */
+	vsf_color(WORKSTATION, G_BLACK);
+	vsf_interior(WORKSTATION, 1); /* Solid fill pattern */
 
+	wind_update(BEG_UPDATE);
 	for (i = 0; i < DOT_FRAMES; i++) {
-		v_circle(vworkstation, xs[i], ys[i], dot_rs[i]);
+		v_circle(WORKSTATION, xs[i], ys[i], dot_rs[i]);
 		/* XXX wait for a specific dt ? */
 	}
+	wind_update(END_UPDATE);
 
 	blackout();
 	/* XXX wait for a bit somehow, afterward? */
@@ -81,10 +83,10 @@ dots_intro(void)
 static void
 blackout(void)
 {
-	vsf_color(vworkstation, G_BLACK);
-	vsf_interior(vworkstation, 1); /* solid fill pattern */
+	vsf_color(WORKSTATION, G_BLACK);
+	vsf_interior(WORKSTATION, 1); /* solid fill pattern */
 	int16_t args[4] = {0, 0, MAX_X, MAX_Y};
-	v_bar(vworkstation, args);
+	v_bar(WORKSTATION, args);
 }
 
 
@@ -94,10 +96,10 @@ blackout(void)
 static void
 whiteout(void)
 {
-	vsf_color(vworkstation, G_WHITE);
-	vsf_interior(vworkstation, 1); /* solid fill pattern */
+	vsf_color(WORKSTATION, G_WHITE);
+	vsf_interior(WORKSTATION, 1); /* solid fill pattern */
 	int16_t args[4] = {0, 0, MAX_X, MAX_Y};
-	v_bar(vworkstation, args);
+	v_bar(WORKSTATION, args);
 }
 
 
@@ -108,11 +110,10 @@ static enum TitleScreenChoice
 title_screen(void)
 {
 	whiteout();
-	vst_color(vworkstation,	G_BLACK);
-	v_gtext(vworkstation, 100, 100, "DALMATIAN AVIATION ST");
-	v_gtext(vworkstation, 100, 124, "by Dressupgeekout");
-	v_gtext(vworkstation, 100, 200, " F1 - PLAY");
-	v_gtext(vworkstation, 100, 224, "F10 - QUIT");
+	v_gtext(WORKSTATION, 100, 100, "DALMATIAN AVIATION ST");
+	v_gtext(WORKSTATION, 100, 124, "by Dressupgeekout");
+	v_gtext(WORKSTATION, 100, 200, " F1 - PLAY");
+	v_gtext(WORKSTATION, 100, 224, "F10 - QUIT");
 
 	enum TitleScreenChoice choice = TITLE_SCREEN_UNDEFINED;
 	int16_t scancode;
@@ -141,25 +142,46 @@ default_screen(void)
 {
 	whiteout();
 
-	static struct Dialogue dialogues[] = {
-		{CHAR_WHITNEY, "Hey!"},
-		{CHAR_WHITNEY, "Do you hear what's going on over here? Isn't that pretty cool?"},
-		{CHAR_KRISSANY, "Yabba dabba doo"},
-		{CHAR_WHITNEY, "What?"},
-		{CHAR_KRISSANY, "You heard me!"},
-		{CHAR_INVALID, ""}
-	};
+	EVMULT_IN event_in;
+	bzero(&event_in, sizeof(event_in));
+	event_in.emi_flags = MU_KEYBD | MU_BUTTON | MU_M1; /* which events to pay att'n to */
+	event_in.emi_bclicks = 1; /* max clicks to consider */
+	event_in.emi_bmask = LEFT_BUTTON | RIGHT_BUTTON; /* which mouse-buttons to consider */
+	event_in.emi_bstate = 0xf; /* only consider mouse-downs */
+	event_in.emi_m1leave = MO_ENTER; /* "enter the whole screen" means we see every mouse-movement */
+	GRECT rect = {0, 0, MAX_X, MAX_Y};
+	event_in.emi_m1 = rect;
 
-	int i = 0;
+	EVMULT_OUT event_out;
 
-	/* XXX strcmp is slow */
-	while (strncmp(dialogues[i].character, CHAR_INVALID, sizeof(dialogues[i].character))) {
-		CharacterSay(&dialogues[i]);
-		(void)AwaitScancode();
-		i++;
+	bool done = false;
+	while (!done) {
+		evnt_multi_fast(&event_in, NULL, &event_out);
+
+		char buf[64];
+		snprintf(buf, sizeof(buf), "emo_events=0x%04x    ", event_out.emo_events);
+		v_gtext(WORKSTATION, 0, 12, buf);
+
+		/* Handle keyboard */
+		if (event_out.emo_events & MU_KEYBD) {
+			snprintf(buf, sizeof(buf), "kreturn=%02x", event_out.emo_kreturn);
+			v_gtext(WORKSTATION, 0, 24+12, buf);
+
+			/* Quit on F10 */
+			if (((event_out.emo_kreturn & 0xff00) >> 8) == K_F10) {
+				done = true;
+			}
+		}
+
+		/* Handle mouse events */
+		if (event_out.emo_events & (MU_BUTTON | MU_M1)) {
+			snprintf(buf, sizeof(buf),
+				"mx=%d my=%d mbutton=0x%02x    ",
+				event_out.emo_mouse.p_x, event_out.emo_mouse.p_y, event_out.emo_mbutton);
+			v_gtext(WORKSTATION, 0, 24+24+6, buf);
+		}
 	}
 }
-
 
 /* ********** */
 
@@ -175,9 +197,9 @@ main(void)
 	bzero(work_in, sizeof(work_in));
 	bzero(work_out, sizeof(work_out));
 	work_in[0] = 1; /* Want a workstation @ current resolution */
-	v_opnvwk(work_in, &vworkstation, work_out);
+	v_opnvwk(work_in, &WORKSTATION, work_out);
 
-	if (!vworkstation) {
+	if (!WORKSTATION) {
 		(void)appl_exit(); /* appl_exit() itself might fail */
 		return EXIT_FAILURE;
 	}
@@ -185,12 +207,16 @@ main(void)
 	MAX_X = work_out[0];
 	MAX_Y = work_out[1];
 
-	//dots_intro();
-	enum TitleScreenChoice choice = title_screen();
+	/* All text will be black henceforth */
+	vst_color(WORKSTATION,G_BLACK);
+
+	dots_intro();
+	enum TitleScreenChoice choice = title_screen(); 
 
 	switch (choice) {
-		case TITLE_SCREEN_WANT_PLAY: /* XXX FALLTHROUGH */
+		case TITLE_SCREEN_WANT_PLAY:
 			default_screen();
+			break;
 		case TITLE_SCREEN_WANT_QUIT:
 			; /* ignore, just quit */
 			break;
@@ -199,7 +225,7 @@ main(void)
 	}
 
 	/* Quit */ 
-	v_clsvwk(vworkstation);
+	v_clsvwk(WORKSTATION);
 	(void)appl_exit();
 	return EXIT_SUCCESS;
 }
