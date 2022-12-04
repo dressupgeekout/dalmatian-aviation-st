@@ -8,7 +8,8 @@ LD=		$(CROSS)-ld
 RANLIB=		$(CROSS)-ranlib
 STRIP=		$(CROSS)-strip
 
-CFLAGS?=	-Os -Wall
+CFLAGS?=	-Wall
+#CFLAGS+=	-Os
 LDFLAGS?=	-nostdlib -L$(CURDIR)/lib lib/crt0.o
 LIBS+=		-lgem -lcmini -lgcc
 

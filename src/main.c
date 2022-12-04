@@ -17,18 +17,20 @@
 /* ********** */
 
 /* GLOBALS */
-
-#define DOT_FRAMES 48
-
 int16_t MAX_X;
 int16_t MAX_Y;
 int16_t WORKSTATION;
+char DEBUG_LINES[4][128];
+enum AppStatus APP_STATUS;
+struct Script *SCRIPT;
 
+/* Function prototypes */
 static void dots_intro(void);
-static void blackout(void);
-static void whiteout(void);
-static enum TitleScreenChoice title_screen(void);
-static void default_screen(void);
+static enum TitleScreenChoice DoTitleScreen(void);
+static enum DefaultScreenChoice DoDefaultScreen(void);
+
+static void handle_keyboard(EVMULT_OUT *events);
+static void handle_mouse(EVMULT_OUT *events);
 
 /* ********** */
 
@@ -40,6 +42,7 @@ static void default_screen(void);
 static void
 dots_intro(void)
 {
+#define DOT_FRAMES 48
 	int16_t xs[DOT_FRAMES] = {
 		311, 38, 441, 269, 196, 379, 209, 545, 554, 302, 416, 96, 473, 320, 310,
 		598, 509, 369, 170, 543, 394, 611, 164, 573, 29, 620, 557, 608, 291,
@@ -62,54 +65,29 @@ dots_intro(void)
 
 	int i;
 	vsf_color(WORKSTATION, G_BLACK);
-	vsf_interior(WORKSTATION, 1); /* Solid fill pattern */
+	vsf_interior(WORKSTATION, FIS_SOLID);
 
 	wind_update(BEG_UPDATE);
 	for (i = 0; i < DOT_FRAMES; i++) {
 		v_circle(WORKSTATION, xs[i], ys[i], dot_rs[i]);
-		/* XXX wait for a specific dt ? */
+		(void)evnt_timer(10); /* Wait 10 ms */
 	}
 	wind_update(END_UPDATE);
+#undef DOT_FRAMES
 
-	blackout();
-	/* XXX wait for a bit somehow, afterward? */
+	Blackout();
+	(void)evnt_timer(1000); /* Wait 1 sec */
 }
 
-
-/*
- * Blanks out the entire screen. Requires that MAX_X and MAX_Y already be
- * defined.
- */
-static void
-blackout(void)
-{
-	vsf_color(WORKSTATION, G_BLACK);
-	vsf_interior(WORKSTATION, 1); /* solid fill pattern */
-	int16_t args[4] = {0, 0, MAX_X, MAX_Y};
-	v_bar(WORKSTATION, args);
-}
-
-
-/*
- * Refer to blackout()
- */
-static void
-whiteout(void)
-{
-	vsf_color(WORKSTATION, G_WHITE);
-	vsf_interior(WORKSTATION, 1); /* solid fill pattern */
-	int16_t args[4] = {0, 0, MAX_X, MAX_Y};
-	v_bar(WORKSTATION, args);
-}
 
 
 /*
  * The player can choose to play the game, or to quit.
  */
 static enum TitleScreenChoice
-title_screen(void)
+DoTitleScreen(void)
 {
-	whiteout();
+	Whiteout();
 	v_gtext(WORKSTATION, 100, 100, "DALMATIAN AVIATION ST");
 	v_gtext(WORKSTATION, 100, 124, "by Dressupgeekout");
 	v_gtext(WORKSTATION, 100, 200, " F1 - PLAY");
@@ -138,9 +116,45 @@ title_screen(void)
 
 
 static void
-default_screen(void)
+handle_keyboard(EVMULT_OUT *events)
 {
-	whiteout();
+	snprintf(DEBUG_LINES[1], sizeof(DEBUG_LINES[1]), "kreturn=%02x", events->emo_kreturn);
+	v_gtext(WORKSTATION, 0, 12+24, DEBUG_LINES[1]);
+
+	uint8_t scancode = (events->emo_kreturn & 0xff00) >> 8;
+
+	switch (scancode) {
+	case K_SPACE:
+		NextBeat(SCRIPT);
+		CharacterSay(SCRIPT);
+		break;
+	case K_F10:
+		APP_STATUS = APP_STATUS_WANT_QUIT;
+		break;
+	default:
+		; /* OK */
+	}
+}
+
+
+static void
+handle_mouse(EVMULT_OUT *events)
+{
+	snprintf(DEBUG_LINES[2], sizeof(DEBUG_LINES[2]),
+		"mx=%d my=%d mbutton=0x%02x    ",
+		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton);
+	v_gtext(WORKSTATION, 0, 24+24+6, DEBUG_LINES[2]);
+}
+
+
+static enum DefaultScreenChoice
+DoDefaultScreen(void)
+{
+	Whiteout();
+
+	SCRIPT = LoadScript("TEST01.TXT");
+	NextBeat(SCRIPT);
+	CharacterSay(SCRIPT);
 
 	EVMULT_IN event_in;
 	bzero(&event_in, sizeof(event_in));
@@ -155,32 +169,29 @@ default_screen(void)
 	EVMULT_OUT event_out;
 
 	bool done = false;
+
 	while (!done) {
 		evnt_multi_fast(&event_in, NULL, &event_out);
 
-		char buf[64];
-		snprintf(buf, sizeof(buf), "emo_events=0x%04x    ", event_out.emo_events);
-		v_gtext(WORKSTATION, 0, 12, buf);
+		snprintf(DEBUG_LINES[0], sizeof(DEBUG_LINES[0]), "emo_events=0x%04x    ", event_out.emo_events);
+		v_gtext(WORKSTATION, 0, 12, DEBUG_LINES[0]);
 
-		/* Handle keyboard */
 		if (event_out.emo_events & MU_KEYBD) {
-			snprintf(buf, sizeof(buf), "kreturn=%02x", event_out.emo_kreturn);
-			v_gtext(WORKSTATION, 0, 24+12, buf);
-
-			/* Quit on F10 */
-			if (((event_out.emo_kreturn & 0xff00) >> 8) == K_F10) {
-				done = true;
-			}
+			handle_keyboard(&event_out);
 		}
 
-		/* Handle mouse events */
 		if (event_out.emo_events & (MU_BUTTON | MU_M1)) {
-			snprintf(buf, sizeof(buf),
-				"mx=%d my=%d mbutton=0x%02x    ",
-				event_out.emo_mouse.p_x, event_out.emo_mouse.p_y, event_out.emo_mbutton);
-			v_gtext(WORKSTATION, 0, 24+24+6, buf);
+			handle_mouse(&event_out);
+		}
+
+		/* Analyze the results of having handled the events. */
+		if (APP_STATUS == APP_STATUS_WANT_QUIT) {
+			CloseScript(SCRIPT);
+			done = true;
 		}
 	}
+
+	return DEFAULT_SCREEN_WANT_QUIT;
 }
 
 /* ********** */
@@ -195,7 +206,6 @@ main(void)
 	int16_t work_in[16];
 	int16_t work_out[64];
 	bzero(work_in, sizeof(work_in));
-	bzero(work_out, sizeof(work_out));
 	work_in[0] = 1; /* Want a workstation @ current resolution */
 	v_opnvwk(work_in, &WORKSTATION, work_out);
 
@@ -208,14 +218,23 @@ main(void)
 	MAX_Y = work_out[1];
 
 	/* All text will be black henceforth */
-	vst_color(WORKSTATION,G_BLACK);
+	vst_color(WORKSTATION, G_BLACK);
 
-	dots_intro();
-	enum TitleScreenChoice choice = title_screen(); 
+	APP_STATUS = APP_STATUS_OK;
+
+	bool want_intro = false; /* XXX command-line option */
+	enum TitleScreenChoice choice;
+
+	if (want_intro) {
+		dots_intro();
+		choice = DoTitleScreen();
+	} else {
+		choice = TITLE_SCREEN_WANT_PLAY;
+	}
 
 	switch (choice) {
 		case TITLE_SCREEN_WANT_PLAY:
-			default_screen();
+			DoDefaultScreen();
 			break;
 		case TITLE_SCREEN_WANT_QUIT:
 			; /* ignore, just quit */

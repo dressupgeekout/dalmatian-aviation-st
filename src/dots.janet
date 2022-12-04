@@ -1,6 +1,6 @@
 # Returns the coordinates and the radius for a bunch of random circles
 
-(math/seedrandom	(os/time))
+(math/seedrandom (os/time))
 
 (for i 0 24
   (let [x (math/floor (* 640 (math/random)))

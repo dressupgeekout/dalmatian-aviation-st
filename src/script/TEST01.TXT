@@ -1,0 +1,12 @@
+Hola this is the test! Hello, I am a test file.
+
+There will be maximum of 2 lines per quotation. This is
+an example of 2 of them.
+Therefore, the script will always have an even number
+of lines, I suppose?
+Does that make sense?
+
+I mean, sure.
+
+So this is why we need a script compiler. And Janet might do a
+good job of it.
