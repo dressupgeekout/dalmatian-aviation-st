@@ -25,6 +25,7 @@ enum AppStatus APP_STATUS;
 struct Script *SCRIPT;
 
 /* Function prototypes */
+static bool enforce_hires(void);
 static void dots_intro(void);
 static enum TitleScreenChoice DoTitleScreen(void);
 static enum DefaultScreenChoice DoDefaultScreen(void);
@@ -33,6 +34,28 @@ static void handle_keyboard(EVMULT_OUT *events);
 static void handle_mouse(EVMULT_OUT *events);
 
 /* ********** */
+
+/*
+ * Returns true if the user's monitor has the required specs, false otherwise.
+ */
+static bool
+enforce_hires(void)
+{
+	const int16_t EXPECTED_MAXX = 640;
+	const int16_t EXPECTED_MAXY = 400;
+
+	if (MAX_X+1 != EXPECTED_MAXX || MAX_Y+1 != EXPECTED_MAXY) {
+		char buf[256];
+		snprintf(
+			buf, sizeof(buf),
+			FA_ERROR "[Sorry, Dalmatian Aviation|requires monochrome/hi-res mode.|%dx%d != %dx%d][OK]",
+			MAX_X+1, MAX_Y+1, EXPECTED_MAXX, EXPECTED_MAXY);
+		(void)form_alert(1, buf);
+		return false;
+	}
+
+	return true;
+}
 
 /*
  * Covers the screen in pseudo-random black dots (animation)
@@ -78,7 +101,6 @@ dots_intro(void)
 	Blackout();
 	(void)evnt_timer(1000); /* Wait 1 sec */
 }
-
 
 
 /*
@@ -217,12 +239,19 @@ main(void)
 	MAX_X = work_out[0];
 	MAX_Y = work_out[1];
 
+	/* Require high-resolution monitor. */
+	if (!enforce_hires()) {
+		v_clsvwk(WORKSTATION);
+		(void)appl_exit();
+		return EXIT_FAILURE;
+	}
+
 	/* All text will be black henceforth */
 	vst_color(WORKSTATION, G_BLACK);
 
 	APP_STATUS = APP_STATUS_OK;
 
-	bool want_intro = false; /* XXX command-line option */
+	bool want_intro = true; /* XXX command-line option */
 	enum TitleScreenChoice choice;
 
 	if (want_intro) {
