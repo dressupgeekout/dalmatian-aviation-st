@@ -194,12 +194,16 @@ DoDefaultScreen(void)
 	NextBeat(GAME.script);
 	CharacterSay(GAME.script);
 
+	/*
+	 * The "blicks = 256|2" is needed to deal with both mouse-buttons
+	 * https://www.atari-forum.com/viewtopic.php?p=433746#p433746
+	 */
 	EVMULT_IN event_in;
 	bzero(&event_in, sizeof(event_in));
 	event_in.emi_flags = MU_KEYBD | MU_BUTTON | MU_M1; /* which events to pay att'n to */
-	event_in.emi_bclicks = 1; /* max clicks to consider */
+	event_in.emi_bclicks = 256|2; /* max clicks to consider */
 	event_in.emi_bmask = LEFT_BUTTON | RIGHT_BUTTON; /* which mouse-buttons to consider */
-	event_in.emi_bstate = 0xf; /* only consider mouse-downs */
+	event_in.emi_bstate = 0xff; /* only consider mouse-downs */
 	event_in.emi_m1leave = MO_ENTER; /* "enter the whole screen" means we see every mouse-movement */
 	GRECT rect = {0, 0, GAME.max_x, GAME.max_y};
 	event_in.emi_m1 = rect;
