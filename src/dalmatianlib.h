@@ -74,6 +74,8 @@ struct Game {
 	int16_t workstation;
 	int16_t max_x;
 	int16_t max_y;
+	int16_t old_x;
+	int16_t old_y;
 	char debug_lines[5][128];
 	AppStatus status;
 	Script *script;

@@ -178,10 +178,21 @@ handle_keyboard(const EVMULT_OUT *events)
 static void
 handle_mouse(const EVMULT_OUT *events)
 {
+	char drag_marker = ' ';
+
+	if (events->emo_mouse.p_x != GAME.old_x || events->emo_mouse.p_y != GAME.old_y) {
+		if (events->emo_mbutton) {
+			drag_marker = 'D';
+		}
+	}
+
 	snprintf(GAME.debug_lines[2], sizeof(GAME.debug_lines[2]),
-		"mx=%d my=%d mbutton=0x%02x    ",
-		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton);
+		"mx=%d my=%d mbutton=0x%02x [%c]     ",
+		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton, drag_marker);
 	v_gtext(GAME.workstation, 0, 24+24+6, GAME.debug_lines[2]);
+
+	GAME.old_x = events->emo_mouse.p_x;
+	GAME.old_y = events->emo_mouse.p_y;
 }
 
 
