@@ -80,6 +80,7 @@ struct Game {
 };
 typedef struct Game Game;
 
+void StopClipping(void);
 void Blackout(void);
 void Whiteout(void);
 

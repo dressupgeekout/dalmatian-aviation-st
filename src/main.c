@@ -88,8 +88,15 @@ DotsIntro(void)
 	vsf_color(GAME.workstation, G_BLACK);
 	vsf_interior(GAME.workstation, FIS_SOLID);
 
+	int16_t clip_rect[4];
+
 	wind_update(BEG_UPDATE);
 	for (i = 0; i < DOT_FRAMES; i++) {
+		clip_rect[0] = xs[i] - dot_rs[i]*2;
+		clip_rect[1] = ys[i] - dot_rs[i]*2;
+		clip_rect[2] = xs[i] + dot_rs[i]*2;
+		clip_rect[3] = ys[i] + dot_rs[i]*2;
+		vs_clip(GAME.workstation, 1, clip_rect);
 		v_circle(GAME.workstation, xs[i], ys[i], dot_rs[i]);
 		(void)evnt_timer(10); /* Wait 10 ms */
 	}
@@ -112,6 +119,7 @@ DoTitleScreen(void)
 	BlitBitmap("BLIMP2.BW", 225, 100, 400, 217);
 
 	const int x = 50;
+	StopClipping();
 	v_gtext(GAME.workstation, x, 100, "DALMATIAN AVIATION ST");
 	v_gtext(GAME.workstation, x, 124, "by Dressupgeekout");
 	v_gtext(GAME.workstation, x, 200, " F1 - PLAY");

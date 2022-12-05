@@ -17,12 +17,24 @@
 #include "script.h"
 
 /*
+ * Set the clip-area to the entire screen, i.e, DON'T limit where the
+ * screen-draws happen.
+ */
+void StopClipping(void)
+{
+	int16_t clip_rect[] = {0, 0, GAME.max_x, GAME.max_y};
+	vs_clip(GAME.workstation, 1, clip_rect);
+}
+
+
+/*
  * Blanks out the entire screen. Requires that MAX_X and MAX_Y already be
  * defined.
  */
 void
 Blackout(void)
 {
+	StopClipping();
 	vsf_color(GAME.workstation, G_BLACK);
 	vsf_interior(GAME.workstation, FIS_SOLID); 
 	int16_t args[] = {0, 0, GAME.max_x, GAME.max_y};
@@ -36,11 +48,13 @@ Blackout(void)
 void
 Whiteout(void)
 {
+	StopClipping();
 	vsf_color(GAME.workstation, G_WHITE);
 	vsf_interior(GAME.workstation, FIS_SOLID);
 	int16_t args[] = {0, 0, GAME.max_x, GAME.max_y};
 	v_bar(GAME.workstation, args);
 }
+
 
 
 /*
@@ -88,7 +102,9 @@ BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
 	bzero(&dest, sizeof(dest));
 
 	int16_t rects[] = {0, 0, w, h, x, y, x+w, y+h};
+	int16_t clip_rect[] = {x, y, x+w, y+h};
 	int16_t color_index[] = {0, 1};
+	vs_clip(GAME.workstation, 1, clip_rect);
 	vrt_cpyfm(GAME.workstation, VR_MODE_REPLACE, rects, &src, &dest, color_index);
 	free(bitmap);
 }
