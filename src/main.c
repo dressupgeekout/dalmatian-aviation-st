@@ -20,13 +20,13 @@
 struct Game GAME;
 
 /* Function prototypes */
-static bool enforce_hires(void);
+static bool EnforceHiRes(void);
 static void DotsIntro(void);
 static TitleScreenChoice DoTitleScreen(void);
 static DefaultScreenChoice DoDefaultScreen(void);
 
-static void handle_keyboard(const EVMULT_OUT *events);
-static void handle_mouse(const EVMULT_OUT *events);
+static void HandleKeyboard(const EVMULT_OUT *events);
+static void HandleMouse(const EVMULT_OUT *events);
 
 /* ********** */
 
@@ -34,7 +34,7 @@ static void handle_mouse(const EVMULT_OUT *events);
  * Returns true if the user's monitor has the required specs, false otherwise.
  */
 static bool
-enforce_hires(void)
+EnforceHiRes(void)
 {
 	const int16_t EXPECTED_MAXX = 640;
 	const int16_t EXPECTED_MAXY = 400;
@@ -154,7 +154,7 @@ DoTitleScreen(void)
 
 
 static void
-handle_keyboard(const EVMULT_OUT *events)
+HandleKeyboard(const EVMULT_OUT *events)
 {
 	snprintf(GAME.debug_lines[1], sizeof(GAME.debug_lines[1]), "kreturn=%02x", events->emo_kreturn);
 	v_gtext(GAME.workstation, 0, 12+24, GAME.debug_lines[1]);
@@ -178,7 +178,7 @@ handle_keyboard(const EVMULT_OUT *events)
 
 
 static void
-handle_mouse(const EVMULT_OUT *events)
+HandleMouse(const EVMULT_OUT *events)
 {
 	char drag_marker = ' ';
 
@@ -234,11 +234,11 @@ DoDefaultScreen(void)
 		v_gtext(GAME.workstation, 0, 12, GAME.debug_lines[0]);
 
 		if (event_out.emo_events & MU_KEYBD) {
-			handle_keyboard(&event_out);
+			HandleKeyboard(&event_out);
 		}
 
 		if (event_out.emo_events & (MU_BUTTON | MU_M1)) {
-			handle_mouse(&event_out);
+			HandleMouse(&event_out);
 		}
 
 		/* Analyze the results of having handled the events. */
@@ -277,7 +277,7 @@ main(void)
 	GAME.max_y = work_out[1];
 
 	/* Require high-resolution monitor. */
-	if (!enforce_hires()) {
+	if (!EnforceHiRes()) {
 		v_clsvwk(GAME.workstation);
 		(void)appl_exit();
 		return EXIT_FAILURE;
