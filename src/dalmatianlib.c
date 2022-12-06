@@ -106,6 +106,7 @@ BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
 	int16_t color_index[] = {0, 1};
 	vs_clip(GAME.workstation, 1, clip_rect);
 	vrt_cpyfm(GAME.workstation, VR_MODE_REPLACE, rects, &src, &dest, color_index);
+	StopClipping();
 	free(bitmap);
 }
 

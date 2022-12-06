@@ -182,7 +182,7 @@ HandleMouse(const EVMULT_OUT *events)
 {
 	char drag_marker = ' ';
 
-	if (events->emo_mouse.p_x != GAME.old_x || events->emo_mouse.p_y != GAME.old_y) {
+	if (events->emo_mouse.p_x != GAME.prev_mouse.p_x || events->emo_mouse.p_y != GAME.prev_mouse.p_y) {
 		if (events->emo_mbutton) {
 			drag_marker = 'D';
 		}
@@ -193,8 +193,8 @@ HandleMouse(const EVMULT_OUT *events)
 		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton, drag_marker);
 	v_gtext(GAME.workstation, 0, 24+24+6, GAME.debug_lines[2]);
 
-	GAME.old_x = events->emo_mouse.p_x;
-	GAME.old_y = events->emo_mouse.p_y;
+	GAME.prev_mouse.p_x = events->emo_mouse.p_x;
+	GAME.prev_mouse.p_y = events->emo_mouse.p_y;
 }
 
 
@@ -207,6 +207,7 @@ DoDefaultScreen(void)
 	NextBeat(GAME.script);
 	CharacterSay(GAME.script);
 
+	BlitBitmap("GEARS2.BW", 25, 75, 128, 119);
 	UpdateFunds(&GAME);
 
 	/*

@@ -74,8 +74,9 @@ struct Game {
 	int16_t workstation;
 	int16_t max_x;
 	int16_t max_y;
-	int16_t old_x;
-	int16_t old_y;
+	PXY prev_mouse;
+	PXY mouse_down_spot;
+	PXY mouse_up_spot;
 	int16_t money;
 	char debug_lines[4][128];
 	AppStatus status;
