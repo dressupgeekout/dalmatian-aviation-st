@@ -9,6 +9,7 @@
 struct Dialogue {
   uint8_t character;
   const char *line;
+	const char *instructions;
 };
 typedef struct Dialogue Dialogue;
 

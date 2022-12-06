@@ -76,7 +76,8 @@ struct Game {
 	int16_t max_y;
 	int16_t old_x;
 	int16_t old_y;
-	char debug_lines[5][128];
+	int16_t money;
+	char debug_lines[4][128];
 	AppStatus status;
 	Script *script;
 };
@@ -88,6 +89,9 @@ void Whiteout(void);
 
 uint8_t AwaitScancode(void);
 void BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h);
+
+void InitGame(Game *game);
+void UpdateFunds(const Game *game);
 
 void CharacterSay(const Script *script);
 Script *LoadScript(void);

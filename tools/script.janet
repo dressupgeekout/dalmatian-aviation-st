@@ -69,7 +69,7 @@
   (print `Dialogue DIALOGUE_LINES[] = {`)
 
   (loop [[speaker line] :in __ACCUMULATOR]
-    (printf "\t{CHAR_%s, %q}," speaker line))
+    (printf "\t{CHAR_%s, %q, NULL}," speaker line))
 
   (print ```
 };

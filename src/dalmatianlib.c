@@ -111,6 +111,39 @@ BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
 
 
 /*
+ * Initializes the Game struct
+ */
+void
+InitGame(Game *game)
+{
+	bzero(game, sizeof(*game));
+	game->money = 1000;
+	game->script = NULL;
+	for (int i = 0; i < 4; i++) {
+		snprintf(game->debug_lines[i], sizeof(game->debug_lines[i]), "%s", "");
+	}
+}
+
+
+/*
+ * Displays the amount of money the player has.
+ */
+void UpdateFunds(const Game *game)
+{
+	static char buf[16];
+	const int16_t x = game->max_x - 100;
+	const int16_t y = 12;
+
+	memset(buf, ' ', sizeof(buf));
+	buf[15] = '\0';
+	v_gtext(game->workstation, x, y, buf);
+
+	snprintf(buf, sizeof(buf), "FUNDS: $%d", game->money);
+	v_gtext(game->workstation, x, y, buf);
+}
+
+
+/*
  * The Script should have already been advanced to the desired beat.
  */
 void
@@ -126,7 +159,9 @@ CharacterSay(const Script *script)
 	/* Clear out both dialogue-lines */
 	memset(buf1, ' ', sizeof(buf1));
 	memset(buf2, ' ', sizeof(buf2));
-	v_gtext(GAME.workstation, x, y1, buf1);
+	buf1[79] = '\0';
+	buf2[79] = '\0';
+	v_gtext(GAME.workstation, x, y2, buf1);
 	v_gtext(GAME.workstation, x, y2, buf2);
 
 	/* Now fill them with the actual dialogue */

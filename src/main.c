@@ -165,6 +165,8 @@ handle_keyboard(const EVMULT_OUT *events)
 	case K_SPACE:
 		NextBeat(GAME.script);
 		CharacterSay(GAME.script);
+		GAME.money -= 15;
+		UpdateFunds(&GAME);
 		break;
 	case K_F10:
 		GAME.status = APP_STATUS_WANT_QUIT;
@@ -204,6 +206,8 @@ DoDefaultScreen(void)
 	GAME.script = LoadScript();
 	NextBeat(GAME.script);
 	CharacterSay(GAME.script);
+
+	UpdateFunds(&GAME);
 
 	/*
 	 * The "blicks = 256|2" is needed to deal with both mouse-buttons
@@ -252,7 +256,7 @@ DoDefaultScreen(void)
 int
 main(void)
 {
-	bzero(&GAME, sizeof(GAME));
+	InitGame(&GAME);
 
 	/* Init */
 	(void)appl_init();
