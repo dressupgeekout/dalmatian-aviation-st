@@ -161,7 +161,7 @@ CharacterSay(const Script *script)
 	memset(buf2, ' ', sizeof(buf2));
 	buf1[79] = '\0';
 	buf2[79] = '\0';
-	v_gtext(GAME.workstation, x, y2, buf1);
+	v_gtext(GAME.workstation, x, y1, buf1);
 	v_gtext(GAME.workstation, x, y2, buf2);
 
 	/* Now fill them with the actual dialogue */
