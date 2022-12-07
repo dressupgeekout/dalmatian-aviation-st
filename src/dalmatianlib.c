@@ -20,10 +20,10 @@
  * Set the clip-area to the entire screen, i.e, DON'T limit where the
  * screen-draws happen.
  */
-void StopClipping(void)
+void StopClipping(const Game *game)
 {
-	int16_t clip_rect[] = {0, 0, GAME.max_x, GAME.max_y};
-	vs_clip(GAME.workstation, 1, clip_rect);
+	int16_t clip_rect[] = {0, 0, game->max_x, game->max_y};
+	vs_clip(game->workstation, 1, clip_rect);
 }
 
 
@@ -32,13 +32,13 @@ void StopClipping(void)
  * defined.
  */
 void
-Blackout(void)
+Blackout(const Game *game)
 {
-	StopClipping();
-	vsf_color(GAME.workstation, G_BLACK);
-	vsf_interior(GAME.workstation, FIS_SOLID); 
-	int16_t args[] = {0, 0, GAME.max_x, GAME.max_y};
-	v_bar(GAME.workstation, args);
+	StopClipping(game);
+	vsf_color(game->workstation, G_BLACK);
+	vsf_interior(game->workstation, FIS_SOLID); 
+	int16_t args[] = {0, 0, game->max_x, game->max_y};
+	v_bar(game->workstation, args);
 }
 
 
@@ -46,13 +46,13 @@ Blackout(void)
  * Refer to Blackout()
  */
 void
-Whiteout(void)
+Whiteout(const Game *game)
 {
-	StopClipping();
-	vsf_color(GAME.workstation, G_WHITE);
-	vsf_interior(GAME.workstation, FIS_SOLID);
-	int16_t args[] = {0, 0, GAME.max_x, GAME.max_y};
-	v_bar(GAME.workstation, args);
+	StopClipping(game);
+	vsf_color(game->workstation, G_WHITE);
+	vsf_interior(game->workstation, FIS_SOLID);
+	int16_t args[] = {0, 0, game->max_x, game->max_y};
+	v_bar(game->workstation, args);
 }
 
 
@@ -73,7 +73,7 @@ AwaitScancode(void)
  * XXX a different function should be used to blit a "quad"
  */
 void
-BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
+BlitBitmap(const Game *game, const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
 {
 	char buf[80];
 	FILE *fp = fopen(path, "rb");
@@ -104,9 +104,9 @@ BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
 	int16_t rects[] = {0, 0, w, h, x, y, x+w, y+h};
 	int16_t clip_rect[] = {x, y, x+w, y+h};
 	int16_t color_index[] = {0, 1};
-	vs_clip(GAME.workstation, 1, clip_rect);
-	vrt_cpyfm(GAME.workstation, VR_MODE_REPLACE, rects, &src, &dest, color_index);
-	StopClipping();
+	vs_clip(game->workstation, 1, clip_rect);
+	vrt_cpyfm(game->workstation, VR_MODE_REPLACE, rects, &src, &dest, color_index);
+	StopClipping(game);
 	free(bitmap);
 }
 
@@ -114,15 +114,25 @@ BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h)
 /*
  * Initializes the Game struct
  */
-void
-InitGame(Game *game)
+Game *
+InitGame(void)
 {
-	bzero(game, sizeof(*game));
+	Game *game = malloc(sizeof(Game));
+	bzero(game, sizeof(Game));
 	game->money = 1000;
 	game->script = NULL;
 	for (int i = 0; i < 4; i++) {
 		snprintf(game->debug_lines[i], sizeof(game->debug_lines[i]), "%s", "");
 	}
+	return game;
+}
+
+
+void
+DeleteGame(Game *game)
+{
+	CloseScript(game->script);
+	free(game);
 }
 
 
@@ -148,28 +158,28 @@ void UpdateFunds(const Game *game)
  * The Script should have already been advanced to the desired beat.
  */
 void
-CharacterSay(const Script *script)
+CharacterSay(const Game *game)
 {
 	static char buf1[80]; 
 	static char buf2[80]; 
 
 	const int16_t x = 6;
-	const int16_t y1 = GAME.max_y - 48;
-	const int16_t y2 = GAME.max_y - 24;
+	const int16_t y1 = game->max_y - 48;
+	const int16_t y2 = game->max_y - 24;
 
 	/* Clear out both dialogue-lines */
 	memset(buf1, ' ', sizeof(buf1));
 	memset(buf2, ' ', sizeof(buf2));
 	buf1[79] = '\0';
 	buf2[79] = '\0';
-	v_gtext(GAME.workstation, x, y1, buf1);
-	v_gtext(GAME.workstation, x, y2, buf2);
+	v_gtext(game->workstation, x, y1, buf1);
+	v_gtext(game->workstation, x, y2, buf2);
 
 	/* Now fill them with the actual dialogue */
-	snprintf(buf1, sizeof(buf1), "%s", script->line1);
-	snprintf(buf2, sizeof(buf2), "%s", script->line2);
-	v_gtext(GAME.workstation, x, y1, buf1);
-	v_gtext(GAME.workstation, x, y2, buf2);
+	snprintf(buf1, sizeof(buf1), "%s", game->script->line1);
+	snprintf(buf2, sizeof(buf2), "%s", game->script->line2);
+	v_gtext(game->workstation, x, y1, buf1);
+	v_gtext(game->workstation, x, y2, buf2);
 }
 
 

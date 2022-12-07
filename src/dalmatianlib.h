@@ -84,22 +84,20 @@ struct Game {
 };
 typedef struct Game Game;
 
-void StopClipping(void);
-void Blackout(void);
-void Whiteout(void);
+void StopClipping(const Game *game);
+void Blackout(const Game *game);
+void Whiteout(const Game *game);
 
 uint8_t AwaitScancode(void);
-void BlitBitmap(const char *path, int16_t x, int16_t y, int16_t w, int16_t h);
+void BlitBitmap(const Game *game, const char *path, int16_t x, int16_t y, int16_t w, int16_t h);
 
-void InitGame(Game *game);
+Game *InitGame(void);
+void DeleteGame(Game *game);
 void UpdateFunds(const Game *game);
 
-void CharacterSay(const Script *script);
+void CharacterSay(const Game *game);
 Script *LoadScript(void);
 void CloseScript(Script *script);
 void NextBeat(Script *script);
-
-/* GLOBAL VARIABLES */
-extern Game GAME;
 
 #endif /* DALMATIANLIB_H */

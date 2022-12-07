@@ -16,17 +16,14 @@
 
 /* ********** */
 
-/* GLOBALS */
-struct Game GAME;
-
 /* Function prototypes */
-static bool EnforceHiRes(void);
-static void DotsIntro(void);
-static TitleScreenChoice DoTitleScreen(void);
-static DefaultScreenChoice DoDefaultScreen(void);
+static bool EnforceHiRes(Game *game);
+static void DotsIntro(Game *game);
+static TitleScreenChoice DoTitleScreen(Game *game);
+static DefaultScreenChoice DoDefaultScreen(Game *game);
 
-static void HandleKeyboard(const EVMULT_OUT *events);
-static void HandleMouse(const EVMULT_OUT *events);
+static void HandleKeyboard(Game *game, const EVMULT_OUT *events);
+static void HandleMouse(Game *game, const EVMULT_OUT *events);
 
 /* ********** */
 
@@ -34,17 +31,17 @@ static void HandleMouse(const EVMULT_OUT *events);
  * Returns true if the user's monitor has the required specs, false otherwise.
  */
 static bool
-EnforceHiRes(void)
+EnforceHiRes(Game *game)
 {
 	const int16_t EXPECTED_MAXX = 640;
 	const int16_t EXPECTED_MAXY = 400;
 
-	if (GAME.max_x+1 != EXPECTED_MAXX || GAME.max_y+1 != EXPECTED_MAXY) {
+	if (game->max_x+1 != EXPECTED_MAXX || game->max_y+1 != EXPECTED_MAXY) {
 		char buf[256];
 		snprintf(
 			buf, sizeof(buf),
 			FA_ERROR "[Sorry, Dalmatian Aviation|requires monochrome/hi-res mode.|%dx%d != %dx%d][OK]",
-			GAME.max_x+1, GAME.max_y+1, EXPECTED_MAXX, EXPECTED_MAXY);
+			game->max_x+1, game->max_y+1, EXPECTED_MAXX, EXPECTED_MAXY);
 		(void)form_alert(1, buf);
 		return false;
 	}
@@ -59,7 +56,7 @@ EnforceHiRes(void)
  * XXX all this data prolly belongs in its own header file
  */
 static void
-DotsIntro(void)
+DotsIntro(Game *game)
 {
 	(void)graf_mouse(M_OFF, NULL);
 
@@ -85,8 +82,8 @@ DotsIntro(void)
 	};
 
 	int i;
-	vsf_color(GAME.workstation, G_BLACK);
-	vsf_interior(GAME.workstation, FIS_SOLID);
+	vsf_color(game->workstation, G_BLACK);
+	vsf_interior(game->workstation, FIS_SOLID);
 
 	int16_t clip_rect[4];
 
@@ -96,14 +93,14 @@ DotsIntro(void)
 		clip_rect[1] = ys[i] - dot_rs[i]*2;
 		clip_rect[2] = xs[i] + dot_rs[i]*2;
 		clip_rect[3] = ys[i] + dot_rs[i]*2;
-		vs_clip(GAME.workstation, 1, clip_rect);
-		v_circle(GAME.workstation, xs[i], ys[i], dot_rs[i]);
+		vs_clip(game->workstation, 1, clip_rect);
+		v_circle(game->workstation, xs[i], ys[i], dot_rs[i]);
 		(void)evnt_timer(10); /* Wait 10 ms */
 	}
 	wind_update(END_UPDATE);
 #undef DOT_FRAMES
 
-	Blackout();
+	Blackout(game);
 	(void)evnt_timer(1000); /* Wait 1 sec */
 }
 
@@ -112,20 +109,20 @@ DotsIntro(void)
  * The player can choose to play the game, or to quit.
  */
 static TitleScreenChoice
-DoTitleScreen(void)
+DoTitleScreen(Game *game)
 {
-	Whiteout();
+	Whiteout(game);
 
-	BlitBitmap("BLIMP2.BW", 225, 100, 400, 217);
+	BlitBitmap(game, "BLIMP2.BW", 225, 100, 400, 217);
 
 	const int x = 50;
-	StopClipping();
-	v_gtext(GAME.workstation, x, 100, "DALMATIAN AVIATION ST");
-	v_gtext(GAME.workstation, x, 124, "by Dressupgeekout");
-	v_gtext(GAME.workstation, x, 200, " F1 - PLAY");
-	v_gtext(GAME.workstation, x, 224, "F10 - QUIT");
+	StopClipping(game);
+	v_gtext(game->workstation, x, 100, "DALMATIAN AVIATION ST");
+	v_gtext(game->workstation, x, 124, "by Dressupgeekout");
+	v_gtext(game->workstation, x, 200, " F1 - PLAY");
+	v_gtext(game->workstation, x, 224, "F10 - QUIT");
 
-	v_gtext(GAME.workstation, 0, GAME.max_y, DALMATIAN_VERSION);
+	v_gtext(game->workstation, 0, game->max_y, DALMATIAN_VERSION);
 
 	(void)graf_mouse(ARROW, NULL);
 	(void)graf_mouse(M_ON, NULL);
@@ -154,22 +151,22 @@ DoTitleScreen(void)
 
 
 static void
-HandleKeyboard(const EVMULT_OUT *events)
+HandleKeyboard(Game *game, const EVMULT_OUT *events)
 {
-	snprintf(GAME.debug_lines[1], sizeof(GAME.debug_lines[1]), "kreturn=%02x", events->emo_kreturn);
-	v_gtext(GAME.workstation, 0, 12+24, GAME.debug_lines[1]);
+	snprintf(game->debug_lines[1], sizeof(game->debug_lines[1]), "kreturn=%02x", events->emo_kreturn);
+	v_gtext(game->workstation, 0, 12+24, game->debug_lines[1]);
 
 	uint8_t scancode = (events->emo_kreturn & 0xff00) >> 8;
 
 	switch (scancode) {
 	case K_SPACE:
-		NextBeat(GAME.script);
-		CharacterSay(GAME.script);
-		GAME.money -= 15;
-		UpdateFunds(&GAME);
+		NextBeat(game->script);
+		CharacterSay(game);
+		game->money -= 15;
+		UpdateFunds(game);
 		break;
 	case K_F10:
-		GAME.status = APP_STATUS_WANT_QUIT;
+		game->status = APP_STATUS_WANT_QUIT;
 		break;
 	default:
 		; /* OK */
@@ -178,37 +175,37 @@ HandleKeyboard(const EVMULT_OUT *events)
 
 
 static void
-HandleMouse(const EVMULT_OUT *events)
+HandleMouse(Game *game, const EVMULT_OUT *events)
 {
 	char drag_marker = ' ';
 
-	if (events->emo_mouse.p_x != GAME.prev_mouse.p_x || events->emo_mouse.p_y != GAME.prev_mouse.p_y) {
+	if (events->emo_mouse.p_x != game->prev_mouse.p_x || events->emo_mouse.p_y != game->prev_mouse.p_y) {
 		if (events->emo_mbutton) {
 			drag_marker = 'D';
 		}
 	}
 
-	snprintf(GAME.debug_lines[2], sizeof(GAME.debug_lines[2]),
+	snprintf(game->debug_lines[2], sizeof(game->debug_lines[2]),
 		"mx=%d my=%d mbutton=0x%02x [%c]     ",
 		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton, drag_marker);
-	v_gtext(GAME.workstation, 0, 24+24+6, GAME.debug_lines[2]);
+	v_gtext(game->workstation, 0, 24+24+6, game->debug_lines[2]);
 
-	GAME.prev_mouse.p_x = events->emo_mouse.p_x;
-	GAME.prev_mouse.p_y = events->emo_mouse.p_y;
+	game->prev_mouse.p_x = events->emo_mouse.p_x;
+	game->prev_mouse.p_y = events->emo_mouse.p_y;
 }
 
 
 static DefaultScreenChoice
-DoDefaultScreen(void)
+DoDefaultScreen(Game *game)
 {
-	Whiteout();
+	Whiteout(game);
 
-	GAME.script = LoadScript();
-	NextBeat(GAME.script);
-	CharacterSay(GAME.script);
+	game->script = LoadScript();
+	NextBeat(game->script);
+	CharacterSay(game);
 
-	BlitBitmap("GEARS2.BW", 25, 75, 128, 119);
-	UpdateFunds(&GAME);
+	BlitBitmap(game, "GEARS2.BW", 25, 75, 128, 119);
+	UpdateFunds(game);
 
 	/*
 	 * The "blicks = 256|2" is needed to deal with both mouse-buttons
@@ -221,7 +218,7 @@ DoDefaultScreen(void)
 	event_in.emi_bmask = LEFT_BUTTON | RIGHT_BUTTON; /* which mouse-buttons to consider */
 	event_in.emi_bstate = 0xff; /* only consider mouse-downs */
 	event_in.emi_m1leave = MO_ENTER; /* "enter the whole screen" means we see every mouse-movement */
-	GRECT rect = {0, 0, GAME.max_x, GAME.max_y};
+	GRECT rect = {0, 0, game->max_x, game->max_y};
 	event_in.emi_m1 = rect;
 
 	EVMULT_OUT event_out;
@@ -231,20 +228,20 @@ DoDefaultScreen(void)
 	while (!done) {
 		evnt_multi_fast(&event_in, NULL, &event_out);
 
-		snprintf(GAME.debug_lines[0], sizeof(GAME.debug_lines[0]), "emo_events=0x%04x    ", event_out.emo_events);
-		v_gtext(GAME.workstation, 0, 12, GAME.debug_lines[0]);
+		snprintf(game->debug_lines[0], sizeof(game->debug_lines[0]), "emo_events=0x%04x    ", event_out.emo_events);
+		v_gtext(game->workstation, 0, 12, game->debug_lines[0]);
 
 		if (event_out.emo_events & MU_KEYBD) {
-			HandleKeyboard(&event_out);
+			HandleKeyboard(game, &event_out);
 		}
 
 		if (event_out.emo_events & (MU_BUTTON | MU_M1)) {
-			HandleMouse(&event_out);
+			HandleMouse(game, &event_out);
 		}
 
 		/* Analyze the results of having handled the events. */
-		if (GAME.status == APP_STATUS_WANT_QUIT) {
-			CloseScript(GAME.script);
+		if (game->status == APP_STATUS_WANT_QUIT) {
+			CloseScript(game->script);
 			done = true;
 		}
 	}
@@ -257,7 +254,7 @@ DoDefaultScreen(void)
 int
 main(void)
 {
-	InitGame(&GAME);
+	Game *game = InitGame();
 
 	/* Init */
 	(void)appl_init();
@@ -267,41 +264,41 @@ main(void)
 	int16_t work_out[64];
 	bzero(work_in, sizeof(work_in));
 	work_in[0] = 1; /* Want a workstation @ current resolution */
-	v_opnvwk(work_in, &GAME.workstation, work_out);
+	v_opnvwk(work_in, &(game->workstation), work_out);
 
-	if (!GAME.workstation) {
+	if (!game->workstation) {
 		(void)appl_exit(); /* appl_exit() itself might fail */
 		return EXIT_FAILURE;
 	}
 
-	GAME.max_x = work_out[0];
-	GAME.max_y = work_out[1];
+	game->max_x = work_out[0];
+	game->max_y = work_out[1];
 
 	/* Require high-resolution monitor. */
-	if (!EnforceHiRes()) {
-		v_clsvwk(GAME.workstation);
+	if (!EnforceHiRes(game)) {
+		v_clsvwk(game->workstation);
 		(void)appl_exit();
 		return EXIT_FAILURE;
 	}
 
 	/* All text will be black henceforth */
-	vst_color(GAME.workstation, G_BLACK);
+	vst_color(game->workstation, G_BLACK);
 
-	GAME.status = APP_STATUS_OK;
+	game->status = APP_STATUS_OK;
 
 	bool want_intro = true; /* XXX command-line option */
 	TitleScreenChoice choice;
 
 	if (want_intro) {
-		DotsIntro();
-		choice = DoTitleScreen();
+		DotsIntro(game);
+		choice = DoTitleScreen(game);
 	} else {
 		choice = TITLE_SCREEN_WANT_PLAY;
 	}
 
 	switch (choice) {
 		case TITLE_SCREEN_WANT_PLAY:
-			DoDefaultScreen();
+			DoDefaultScreen(game);
 			break;
 		case TITLE_SCREEN_WANT_QUIT:
 			; /* ignore, just quit */
@@ -311,7 +308,8 @@ main(void)
 	}
 
 	/* Quit */ 
-	v_clsvwk(GAME.workstation);
+	v_clsvwk(game->workstation);
+	DeleteGame(game);
 	(void)appl_exit();
 	return EXIT_SUCCESS;
 }
