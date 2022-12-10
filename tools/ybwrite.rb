@@ -50,20 +50,39 @@ outfile_fp.write(MAGIC_NUMBER)
 # 0x003 - 0x0006: The dimensions of the picture
 outfile_fp.write([width, height].pack(UINT16_T_BE))
 
+# Get the initial color
+pixel = infile_fp.read(1).unpack(UCHAR_STAR)[0]
+this_color = pixel
+infile_fp.rewind
+
+# OK now we can start for real
+counter = 0
+
 until infile_fp.eof?
-  # Read 16 pixel's worth of input (which is 16 bytes) 
-  pixels = infile_fp.read(16).unpack(UCHAR_STAR)
+  while pixel == this_color
+    byte = infile_fp.read(1)
+    break if not byte # XXX skip
+    pixel = byte.unpack(UCHAR_STAR)[0]
 
-  # Now we're going to squish them all together into a single 16-bit word.
-  word = 0x0000
-
-  pixels.each_with_index do |pixel, i|
-    # Input says "zero or 255" but really what we want is "zero or 1".
-    real_pixel = (pixel == 0xFF ? 1 : 0)
-    word |= (real_pixel << 15-i)
+    if (pixel == this_color) && (counter < 128)
+       # Run continues up to a maximum
+      counter += 1
+    else
+      # The run is over, commit what we have learned
+      #
+      # The input says "zero or 255" but really what we want is "zero or 1"
+      #
+      # The output will be 1 byte: LSB contains the color (0 or 1) and the
+      # rest of the bits encode the run-count
+      real_color = (this_color == 0xFF ? 1 : 0)
+      out = counter
+      out |= (real_color << 7)
+      outfile_fp.write([out].pack(UCHAR_STAR))
+      $stderr.puts([counter, real_color].inspect)
+      counter = 0
+      this_color = pixel
+    end
   end
-
-  outfile_fp.write([word].pack(UINT16_T_BE))
 end
 
 infile_fp.close
