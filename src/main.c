@@ -113,7 +113,7 @@ DoTitleScreen(Game *game)
 {
 	Whiteout(game);
 
-	BlitBitmap(game, "BLIMP2.BW", 225, 100, 400, 217);
+	BlitYB(game, "BLIMP2.YB", 225, 100);
 
 	const int x = 50;
 	StopClipping(game);
@@ -204,7 +204,7 @@ DoDefaultScreen(Game *game)
 	NextBeat(game->script);
 	CharacterSay(game);
 
-	BlitBitmap(game, "GEARS2.BW", 25, 75, 128, 119);
+	BlitYB(game, "GEARS2.YB", 25, 75);
 	UpdateFunds(game);
 
 	/*

@@ -2,5 +2,5 @@
 set -ex
 make
 cp DALMATIA.PRG ~/atariroot/DALMATIA
-cp blimp2.bw ~/atariroot/DALMATIA/BLIMP2.BW
-cp gears2.bw ~/atariroot/DALMATIA/GEARS2.BW
+cp BLIMP2.YB ~/atariroot/DALMATIA/BLIMP2.YB
+cp GEARS2.YB ~/atariroot/DALMATIA/GEARS2.YB
