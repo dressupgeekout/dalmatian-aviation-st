@@ -12,10 +12,26 @@
 #include <gem.h>
 
 #include "dalmatianlib.h"
+#include "janet.h"
 #include "yb.h"
 
 /* Import the CHARACTER_MAP and DIALOGUE_LINES global vars: */
 #include "script.h"
+
+/*
+ * XXX this SHOULD come from libcmini, I reckon
+ *
+ * prototype is in
+ * /opt/cross-mint/m68k-atari-mint/sys-root/usr/include/stdio.h
+ *
+ * Maybe I need a newer cross-gcc?
+ */
+int
+__flshfp __P ((FILE *__stream, int __c))
+{
+	return 1; /* XXX */
+}
+
 
 /*
  * Set the clip-area to the entire screen, i.e, DON'T limit where the
@@ -130,6 +146,8 @@ InitGame(void)
 {
 	Game *game = malloc(sizeof(Game));
 	bzero(game, sizeof(Game));
+	(void)janet_init();
+	game->J = janet_core_env(NULL);
 	game->money = 1000;
 	game->script = NULL;
 	for (int i = 0; i < 4; i++) {
@@ -143,6 +161,7 @@ void
 DeleteGame(Game *game)
 {
 	CloseScript(game->script);
+	janet_deinit();
 	free(game);
 }
 

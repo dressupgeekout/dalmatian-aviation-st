@@ -8,13 +8,14 @@ LD=		$(CROSS)-ld
 RANLIB=		$(CROSS)-ranlib
 STRIP=		$(CROSS)-strip
 
-CFLAGS?=	-Wall
+CFLAGS?=	-DATARI -Wall
 CFLAGS+=	-Os
 LDFLAGS?=	-nostdlib -L$(CURDIR)/lib lib/crt0.o
-LIBS+=		-lgem -lcmini -lgcc
+LIBS+=		-lgem -lm -lcmini -lgcc
 
 SRCS=	# defined
 SRCS+=	dalmatianlib.c
+SRCS+=	janet.c
 SRCS+=	main.c
 SRCS+=	yb.c
 
