@@ -12,6 +12,7 @@
 #include <gem.h>
 
 #include "dalmatianlib.h"
+#include "yb.h"
 
 /* Import the CHARACTER_MAP and DIALOGUE_LINES global vars: */
 #include "script.h"
@@ -108,6 +109,60 @@ BlitBitmap(const Game *game, const char *path, int16_t x, int16_t y, int16_t w, 
 	vrt_cpyfm(game->workstation, VR_MODE_REPLACE, rects, &src, &dest, color_index);
 	StopClipping(game);
 	free(bitmap);
+}
+
+
+/*
+ * Blits the entire picture somewhere
+ *
+ * XXX a different function should be used to blit a "quad"
+ */
+void
+BlitYB(const Game *game, const char *path, int16_t x, int16_t y)
+{
+	YBStatus status;
+	YBFile *yb = YBFile_Open(path, &status);
+
+	if (!yb) {
+		switch (status) {
+		case YB_EBADMAGIC:
+			(void)form_alert(1, FA_ERROR "[BlitYB: YB_EBADMAGIC][OK]");
+			break;
+		case YB_ENOEXIST:
+			(void)form_alert(1, FA_ERROR "[BlitYB: YB_ENOEXIST][OK]");
+			break;
+		case YB_ENOMEM:
+			(void)form_alert(1, FA_ERROR "[BlitYB: YB_ENOMEM][OK]");
+			break;
+		case YB_EUNKNOWN:
+			(void)form_alert(1, FA_ERROR "[BlitYB: YB_EUNKNOWN][OK]");
+			break;
+		default:
+			; /* OK */
+		}
+		return;
+	}
+
+	MFDB src;
+	bzero(&src, sizeof(src));
+	src.fd_addr = yb->data;
+	src.fd_w = (int16_t)yb->width;
+	src.fd_h = (int16_t)yb->height;
+	src.fd_wdwidth = (int16_t)(yb->width/16);
+	src.fd_stand = 1;
+	src.fd_nplanes = 1;
+
+	MFDB dest;
+	bzero(&dest, sizeof(dest));
+
+	int16_t rects[] = {0, 0, yb->width, yb->height, x, y, x+yb->width, y+yb->height};
+	int16_t clip_rect[] = {x, y, x+yb->width, y+yb->height};
+	int16_t color_index[] = {0, 1};
+	vs_clip(game->workstation, 1, clip_rect);
+	vrt_cpyfm(game->workstation, VR_MODE_REPLACE, rects, &src, &dest, color_index);
+	StopClipping(game);
+
+	YBFile_Close(yb);
 }
 
 

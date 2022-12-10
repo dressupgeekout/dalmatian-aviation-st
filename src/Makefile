@@ -16,6 +16,7 @@ LIBS+=		-lgem -lcmini -lgcc
 SRCS=	# defined
 SRCS+=	dalmatianlib.c
 SRCS+=	main.c
+SRCS+=	yb.c
 
 OBJS=	$(patsubst %.c,%.o,$(SRCS))
 PROG=	DALMATIA.PRG
