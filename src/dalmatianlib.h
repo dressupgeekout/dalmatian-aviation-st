@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "janet.h"
+
 #define DALMATIAN_VERSION "v0.0.0a"
 
 /* Keyboard scancodes that aren't macro'd already for some reason */
@@ -81,6 +83,7 @@ struct Game {
 	char debug_lines[4][128];
 	AppStatus status;
 	Script *script;
+	JanetTable *J;
 };
 typedef struct Game Game;
 
