@@ -14,6 +14,7 @@ LDFLAGS?=	-nostdlib -L$(CURDIR)/lib lib/crt0.o
 LIBS+=		-lgem -lm -lcmini -lgcc
 
 SRCS=	# defined
+SRCS+=	daljan.c
 SRCS+=	dalmatianlib.c
 SRCS+=	janet.c
 SRCS+=	main.c

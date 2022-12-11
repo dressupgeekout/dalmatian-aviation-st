@@ -12,6 +12,7 @@
 #include <gem.h>
 
 #include "dalmatianlib.h"
+#include "daljan.h"
 #include "janet.h"
 #include "yb.h"
 
@@ -147,7 +148,17 @@ InitGame(void)
 	Game *game = malloc(sizeof(Game));
 	bzero(game, sizeof(Game));
 	(void)janet_init();
+
 	game->J = janet_core_env(NULL);
+	static const JanetReg functions[] = {
+		{"form-alert", dj_form_alert, NULL},
+		{NULL, NULL, NULL}
+	};
+	janet_cfuns(game->J, NULL, functions);
+
+	janet_dostring(game->J, "(form-alert \"scalita was here\")", NULL, NULL);
+
+
 	game->money = 1000;
 	game->script = NULL;
 	for (int i = 0; i < 4; i++) {
