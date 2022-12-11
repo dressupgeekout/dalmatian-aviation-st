@@ -1,0 +1,11 @@
+(defn dalmatian-main
+  []
+  (form-alert (string/format "%s? %s" "hey" "you"))
+  (form-alert (string/format "you're in my corner %d" (+ 2 4)))
+  (def foo @{})
+  (set (foo :a) 1)
+  # this is a comment! :::
+  (set (foo :b) 2)
+  (form-alert (string/format "%q" foo)))
+
+(dalmatian-main)

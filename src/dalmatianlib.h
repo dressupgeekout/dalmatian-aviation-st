@@ -59,17 +59,6 @@ typedef enum DefaultScreenChoice DefaultScreenChoice;
 
 
 /*
- * The currently loaded script, and some metadata.
- */
-struct Script {
-	char title[16];
-	char line1[80];
-	char line2[80];
-	int8_t beat_index;
-};
-typedef struct Script Script;
-
-/*
  * The whole game
  */
 struct Game {
@@ -82,7 +71,6 @@ struct Game {
 	int16_t money;
 	char debug_lines[4][128];
 	AppStatus status;
-	Script *script;
 	JanetTable *J;
 };
 typedef struct Game Game;
@@ -99,8 +87,7 @@ void DeleteGame(Game *game);
 void UpdateFunds(const Game *game);
 
 void CharacterSay(const Game *game);
-Script *LoadScript(void);
-void CloseScript(Script *script);
-void NextBeat(Script *script);
+
+void LoadScript(Game *game, const char *path);
 
 #endif /* DALMATIANLIB_H */

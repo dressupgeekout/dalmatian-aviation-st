@@ -16,21 +16,21 @@
 #include "janet.h"
 #include "yb.h"
 
-/* Import the CHARACTER_MAP and DIALOGUE_LINES global vars: */
-#include "script.h"
-
 /*
  * XXX this SHOULD come from libcmini, I reckon
+ * Maybe I need a newer cross-gcc?
  *
- * prototype is in
+ * prototype is in:
  * /opt/cross-mint/m68k-atari-mint/sys-root/usr/include/stdio.h
  *
- * Maybe I need a newer cross-gcc?
+ * "This performs actual output when necessary, flushing STREAM's buffer and
+ * optionally writing another character."
  */
 int
 __flshfp __P ((FILE *__stream, int __c))
 {
-	return 1; /* XXX */
+	fflush(__stream);
+	return 0;
 }
 
 
@@ -147,23 +147,26 @@ InitGame(void)
 {
 	Game *game = malloc(sizeof(Game));
 	bzero(game, sizeof(Game));
-	(void)janet_init();
 
+	/* Initialize Janet interpreter */
+	(void)janet_init();
 	game->J = janet_core_env(NULL);
+
+	/* Janet: load Dalmatian library */
 	static const JanetReg functions[] = {
 		{"form-alert", dj_form_alert, NULL},
 		{NULL, NULL, NULL}
 	};
 	janet_cfuns(game->J, NULL, functions);
 
-	janet_dostring(game->J, "(form-alert \"scalita was here\")", NULL, NULL);
-
-
-	game->money = 1000;
-	game->script = NULL;
+	/* Initialize debug-lines */
 	for (int i = 0; i < 4; i++) {
 		snprintf(game->debug_lines[i], sizeof(game->debug_lines[i]), "%s", "");
 	}
+
+	/* Misc */
+	game->money = 1000;
+
 	return game;
 }
 
@@ -171,7 +174,6 @@ InitGame(void)
 void
 DeleteGame(Game *game)
 {
-	CloseScript(game->script);
 	janet_deinit();
 	free(game);
 }
@@ -217,8 +219,8 @@ CharacterSay(const Game *game)
 	v_gtext(game->workstation, x, y2, buf2);
 
 	/* Now fill them with the actual dialogue */
-	snprintf(buf1, sizeof(buf1), "%s", game->script->line1);
-	snprintf(buf2, sizeof(buf2), "%s", game->script->line2);
+	snprintf(buf1, sizeof(buf1), "%s", "XXX");
+	snprintf(buf2, sizeof(buf2), "%s", "XXX");
 	v_gtext(game->workstation, x, y1, buf1);
 	v_gtext(game->workstation, x, y2, buf2);
 }
@@ -227,38 +229,55 @@ CharacterSay(const Game *game)
 /*
  * Loads a script from disk.
  */
-Script *
-LoadScript(void)
-{
-	Script *script = malloc(sizeof(Script));
-	bzero(script, sizeof(*script));
-	script->beat_index = -1; /* Such that the subsequent NextBeat() goes to 0 */
-	return script;
-}
-
-
-/*
- * Closes the script file descriptor, and frees memory.
- */
 void
-CloseScript(Script *script)
+LoadScript(Game *game, const char *path)
 {
+	/* Slurp the file */
+	FILE *fp = fopen(path, "r");
+	if (!fp) {
+		(void)form_alert(1, FA_ERROR "[fopen() crash][OK]");
+		return;
+	}
+
+	fseek(fp, 0L, SEEK_END);
+	size_t script_length = ftell(fp) + 1;
+	rewind(fp);
+	char *script = malloc(script_length);
+	if (!script) {
+		(void)form_alert(1, FA_ERROR "[malloc() crash][OK]");
+		return;
+	}
+	fread(script, 1, script_length, fp);
+	fclose(fp);
+
+	/*
+	 * Read the script -- XXX it *ought* to return a function, which we pcall
+	 */
+	Janet script_main;
+	int errflags = janet_dobytes(game->J, (const uint8_t *)script, script_length, path, &script_main);
+
+	if (errflags & 0x01) {
+		(void)form_alert(1, FA_ERROR "[JANET_SIGNAL not OK][OK]");
+	}
+
+	if (errflags & 0x02) {
+		(void)form_alert(1, FA_ERROR "[compile error][OK]");
+	}
+
+	if (errflags & 0x04) {
+		(void)form_alert(1, FA_ERROR "[parse error][OK]");
+	}
+
 	free(script);
-	script = NULL;
-}
 
-
-/*
- * Loads the next line of dialogue into the Script.
- */
-void
-NextBeat(Script *script)
-{
-	if (script->beat_index >= (NUM_BEATS-1)) return;
-	script->beat_index++;
-	snprintf(
-		script->line1, sizeof(script->line1),
-		"%s: %s",
-		CHARACTER_MAP[DIALOGUE_LINES[script->beat_index].character],
-		DIALOGUE_LINES[script->beat_index].line);
+#if 0
+	/* Execute that function */
+	if (janet_checktype(script_main, JANET_FUNCTION)) {
+		JanetFunction *script_main_fn = NULL;
+		script_main_fn = janet_unwrap_function(script_main);
+		Janet rv = janet_call(script_main_fn, 0, NULL);
+	} else {
+		(void)form_alert(1, FA_ERROR "[script didn't return a function][OK]");
+	}
+#endif
 }

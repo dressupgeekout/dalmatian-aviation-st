@@ -160,7 +160,6 @@ HandleKeyboard(Game *game, const EVMULT_OUT *events)
 
 	switch (scancode) {
 	case K_SPACE:
-		NextBeat(game->script);
 		CharacterSay(game);
 		game->money -= 15;
 		UpdateFunds(game);
@@ -200,8 +199,7 @@ DoDefaultScreen(Game *game)
 {
 	Whiteout(game);
 
-	game->script = LoadScript();
-	NextBeat(game->script);
+	LoadScript(game, "TEST.JAN");
 	CharacterSay(game);
 
 	BlitYB(game, "GEARS2.YB", 25, 75);
@@ -241,7 +239,6 @@ DoDefaultScreen(Game *game)
 
 		/* Analyze the results of having handled the events. */
 		if (game->status == APP_STATUS_WANT_QUIT) {
-			CloseScript(game->script);
 			done = true;
 		}
 	}

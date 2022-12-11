@@ -24,9 +24,9 @@ OBJS=	$(patsubst %.c,%.o,$(SRCS))
 PROG=	DALMATIA.PRG
 
 .PHONY: all
-all: script.h $(PROG)
+all: $(PROG)
 
-$(PROG): $(OBJS) script.h
+$(PROG): $(OBJS)
 	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
 	$(STRIP) $@
 	@echo ==============================
@@ -36,9 +36,6 @@ $(PROG): $(OBJS) script.h
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-script.h: ../tools/script.janet
-	janet $^ > $@
-
 .PHONY: clean
 clean:
-	rm -f $(PROG) $(OBJS) script.h
+	rm -f $(PROG) $(OBJS)
