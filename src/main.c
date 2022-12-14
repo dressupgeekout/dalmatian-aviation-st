@@ -160,9 +160,11 @@ HandleKeyboard(Game *game, const EVMULT_OUT *events)
 
 	switch (scancode) {
 	case K_SPACE:
-		CharacterSay(game);
+	{
+		NextBeat(game);
 		game->money -= 15;
 		UpdateFunds(game);
+	}
 		break;
 	case K_F10:
 		game->status = APP_STATUS_WANT_QUIT;
@@ -200,10 +202,11 @@ DoDefaultScreen(Game *game)
 	Whiteout(game);
 
 	LoadScript(game, "TEST.JAN");
-	CharacterSay(game);
 
 	BlitYB(game, "GEARS2.YB", 25, 75);
 	UpdateFunds(game);
+
+	LoadDialogueScript(game, "TALK.JAN");
 
 	/*
 	 * The "blicks = 256|2" is needed to deal with both mouse-buttons

@@ -1,0 +1,14 @@
+(defn krissany
+  [lines]
+  {:speaker "KRISSANY"
+   :lines lines})
+
+(defn whitney
+  [lines]
+  {:speaker "WHITNEY"
+   :lines lines})
+
+(def __BEATS__ [(krissany ["Hi!" "I am Krissany, I'm cool."])
+                (krissany ["Don't you think so?" ""])
+                (whitney ["...What? I wasn't paying attention." ""])
+                (krissany ["Of course you weren't, you silly dog." ""])])

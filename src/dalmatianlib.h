@@ -71,7 +71,9 @@ struct Game {
 	int16_t money;
 	char debug_lines[4][128];
 	AppStatus status;
+	int16_t beat_index;
 	JanetTable *J;
+	Janet *dialogue_tree;
 };
 typedef struct Game Game;
 
@@ -86,8 +88,10 @@ Game *InitGame(void);
 void DeleteGame(Game *game);
 void UpdateFunds(const Game *game);
 
+void NextBeat(Game *game);
 void CharacterSay(const Game *game);
 
 void LoadScript(Game *game, const char *path);
+void LoadDialogueScript(Game *game, const char *path);
 
 #endif /* DALMATIANLIB_H */

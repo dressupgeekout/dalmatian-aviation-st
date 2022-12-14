@@ -148,6 +148,8 @@ InitGame(void)
 	Game *game = malloc(sizeof(Game));
 	bzero(game, sizeof(Game));
 
+	game->beat_index = -1;
+
 	/* Initialize Janet interpreter */
 	(void)janet_init();
 	game->J = janet_core_env(NULL);
@@ -198,13 +200,28 @@ void UpdateFunds(const Game *game)
 
 
 /*
- * The Script should have already been advanced to the desired beat.
+ * Advance the beat-index and populate the dialogue-lines with the resultant
+ * dialogue.
+ */
+void
+NextBeat(Game *game)
+{
+	if (game->beat_index < (janet_tuple_length(game->dialogue_tree)-1)) {
+		game->beat_index++;
+		CharacterSay(game);
+	}
+}
+
+
+/*
+ * We should have already been advanced to the desired beat.
  */
 void
 CharacterSay(const Game *game)
 {
 	static char buf1[80]; 
 	static char buf2[80]; 
+	static char errbuf[80];
 
 	const int16_t x = 6;
 	const int16_t y1 = game->max_y - 48;
@@ -218,9 +235,47 @@ CharacterSay(const Game *game)
 	v_gtext(game->workstation, x, y1, buf1);
 	v_gtext(game->workstation, x, y2, buf2);
 
-	/* Now fill them with the actual dialogue */
-	snprintf(buf1, sizeof(buf1), "%s", "XXX");
-	snprintf(buf2, sizeof(buf2), "%s", "XXX");
+	/* LOOTS of type-checking */
+	if (!janet_checktype(game->dialogue_tree[game->beat_index], JANET_STRUCT)) {
+		snprintf(errbuf, sizeof(errbuf), "%s[beat %d is not a struct][OK]", FA_ERROR, game->beat_index);
+		return (void)form_alert(1, errbuf);
+	}
+
+	JanetStruct beat = janet_unwrap_struct(game->dialogue_tree[game->beat_index]);
+	Janet speaker = janet_struct_get(beat, janet_ckeywordv("speaker"));
+	Janet lines_w = janet_struct_get(beat, janet_ckeywordv("lines"));
+
+	if (!janet_checktype(speaker, JANET_STRING)) {
+		snprintf(errbuf, sizeof(errbuf), "%s[beat %d|'speaker' is not a string][OK]", FA_ERROR, game->beat_index);
+		return (void)form_alert(1, errbuf);
+	}
+
+	if (!janet_checktype(lines_w, JANET_TUPLE)) {
+		snprintf(errbuf, sizeof(errbuf), "%s[beat %d|'lines' is not a tuple][OK]", FA_ERROR, game->beat_index);
+		return (void)form_alert(1, errbuf);
+	}
+
+	const uint8_t EXPECTED_LENGTH = 2;
+	const Janet *lines = janet_unwrap_tuple(lines_w);
+	int16_t lines_length = janet_tuple_length(lines);
+
+	if (lines_length != EXPECTED_LENGTH) {
+		snprintf(errbuf, sizeof(errbuf),
+			"%s[beat %d|wrong lines length|%d != %d][OK]", FA_ERROR, game->beat_index, lines_length, EXPECTED_LENGTH);
+		return (void)form_alert(1, errbuf);
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (!janet_checktype(lines[i], JANET_STRING)) {
+			snprintf(errbuf, sizeof(errbuf),
+				"%s[beat %d|line %d is not a string|%d != %d][OK]", FA_ERROR, game->beat_index, i, JANET_STRING, janet_type(lines[i]));
+			return (void)form_alert(1, errbuf);
+		}
+	}
+
+	/* Finally! */
+	snprintf(buf1, sizeof(buf1), "%s: %s", janet_unwrap_string(speaker), janet_unwrap_string(lines[0]));
+	snprintf(buf2, sizeof(buf2), "%s", janet_unwrap_string(lines[1]));
 	v_gtext(game->workstation, x, y1, buf1);
 	v_gtext(game->workstation, x, y2, buf2);
 }
@@ -280,4 +335,26 @@ LoadScript(Game *game, const char *path)
 		(void)form_alert(1, FA_ERROR "[script didn't return a function][OK]");
 	}
 #endif
+}
+
+
+void
+LoadDialogueScript(Game *game, const char *path)
+{
+	LoadScript(game, path);
+
+	JanetBinding binding = janet_resolve_ext(game->J, janet_csymbol("__BEATS__"));
+
+	if (binding.type == JANET_BINDING_DEF) {
+		if (janet_checktype(binding.value, JANET_TUPLE)) {
+			game->dialogue_tree = (Janet *)janet_unwrap_tuple(binding.value);
+			char buf[128];
+			snprintf(buf, sizeof(buf), "%s[talk has %d beats][OK]", FA_ERROR, janet_tuple_length(game->dialogue_tree));
+			(void)form_alert(1, buf);
+		} else {
+			(void)form_alert(1, FA_ERROR "[__BEATS__ is not an array][OK]");
+		}
+	} else {
+		(void)form_alert(1, FA_ERROR "[script has no def __BEATS__][OK]");
+	}
 }
