@@ -40,14 +40,14 @@ __flshfp __P ((FILE *__stream, int __c))
  */
 void StopClipping(const Game *game)
 {
-	int16_t clip_rect[] = {0, 0, game->max_x, game->max_y};
+	int16_t clip_rect[] = {0, 0, game->maxpt.p_x, game->maxpt.p_y};
 	vs_clip(game->workstation, 1, clip_rect);
 }
 
 
 /*
- * Blanks out the entire screen. Requires that MAX_X and MAX_Y already be
- * defined.
+ * Blanks out the entire screen. Requires that Game->maxpt already be
+ * computed.
  */
 void
 Blackout(const Game *game)
@@ -55,7 +55,7 @@ Blackout(const Game *game)
 	StopClipping(game);
 	vsf_color(game->workstation, G_BLACK);
 	vsf_interior(game->workstation, FIS_SOLID); 
-	int16_t args[] = {0, 0, game->max_x, game->max_y};
+	int16_t args[] = {0, 0, game->maxpt.p_x, game->maxpt.p_y};
 	v_bar(game->workstation, args);
 }
 
@@ -69,7 +69,7 @@ Whiteout(const Game *game)
 	StopClipping(game);
 	vsf_color(game->workstation, G_WHITE);
 	vsf_interior(game->workstation, FIS_SOLID);
-	int16_t args[] = {0, 0, game->max_x, game->max_y};
+	int16_t args[] = {0, 0, game->maxpt.p_x, game->maxpt.p_y};
 	v_bar(game->workstation, args);
 }
 
@@ -187,7 +187,7 @@ DeleteGame(Game *game)
 void UpdateFunds(const Game *game)
 {
 	static char buf[16];
-	const int16_t x = game->max_x - 100;
+	const int16_t x = game->maxpt.p_x - 100;
 	const int16_t y = 12;
 
 	memset(buf, ' ', sizeof(buf));
@@ -224,8 +224,8 @@ CharacterSay(const Game *game)
 	static char errbuf[80];
 
 	const int16_t x = 6;
-	const int16_t y1 = game->max_y - 48;
-	const int16_t y2 = game->max_y - 24;
+	const int16_t y1 = game->maxpt.p_y - 48;
+	const int16_t y2 = game->maxpt.p_y - 24;
 
 	/* Clear out both dialogue-lines */
 	memset(buf1, ' ', sizeof(buf1));

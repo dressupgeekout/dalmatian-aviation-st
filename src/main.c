@@ -36,12 +36,12 @@ EnforceHiRes(Game *game)
 	const int16_t EXPECTED_MAXX = 640;
 	const int16_t EXPECTED_MAXY = 400;
 
-	if (game->max_x+1 != EXPECTED_MAXX || game->max_y+1 != EXPECTED_MAXY) {
+	if (game->maxpt.p_x+1 != EXPECTED_MAXX || game->maxpt.p_y+1 != EXPECTED_MAXY) {
 		char buf[256];
 		snprintf(
 			buf, sizeof(buf),
 			FA_ERROR "[Sorry, Dalmatian Aviation|requires monochrome/hi-res mode.|%dx%d != %dx%d][OK]",
-			game->max_x+1, game->max_y+1, EXPECTED_MAXX, EXPECTED_MAXY);
+			game->maxpt.p_x+1, game->maxpt.p_y+1, EXPECTED_MAXX, EXPECTED_MAXY);
 		(void)form_alert(1, buf);
 		return false;
 	}
@@ -122,7 +122,7 @@ DoTitleScreen(Game *game)
 	v_gtext(game->workstation, x, 200, " F1 - PLAY");
 	v_gtext(game->workstation, x, 224, "F10 - QUIT");
 
-	v_gtext(game->workstation, 0, game->max_y, DALMATIAN_VERSION);
+	v_gtext(game->workstation, 0, game->maxpt.p_y, DALMATIAN_VERSION);
 
 	(void)graf_mouse(ARROW, NULL);
 	(void)graf_mouse(M_ON, NULL);
@@ -219,7 +219,7 @@ DoDefaultScreen(Game *game)
 	event_in.emi_bmask = LEFT_BUTTON | RIGHT_BUTTON; /* which mouse-buttons to consider */
 	event_in.emi_bstate = 0xff; /* only consider mouse-downs */
 	event_in.emi_m1leave = MO_ENTER; /* "enter the whole screen" means we see every mouse-movement */
-	GRECT rect = {0, 0, game->max_x, game->max_y};
+	GRECT rect = {0, 0, game->maxpt.p_x, game->maxpt.p_y};
 	event_in.emi_m1 = rect;
 
 	EVMULT_OUT event_out;
@@ -271,8 +271,8 @@ main(void)
 		return EXIT_FAILURE;
 	}
 
-	game->max_x = work_out[0];
-	game->max_y = work_out[1];
+	game->maxpt.p_x = work_out[0];
+	game->maxpt.p_y = work_out[1];
 
 	/* Require high-resolution monitor. */
 	if (!EnforceHiRes(game)) {

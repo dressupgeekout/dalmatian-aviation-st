@@ -63,8 +63,7 @@ typedef enum DefaultScreenChoice DefaultScreenChoice;
  */
 struct Game {
 	int16_t workstation;
-	int16_t max_x;
-	int16_t max_y;
+	PXY maxpt;
 	PXY prev_mouse;
 	PXY mouse_down_spot;
 	PXY mouse_up_spot;
