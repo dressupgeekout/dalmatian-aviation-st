@@ -148,6 +148,7 @@ InitGame(void)
 	Game *game = malloc(sizeof(Game));
 	bzero(game, sizeof(Game));
 
+	game->mouse_is_down = false;
 	game->beat_index = -1;
 
 	/* Initialize Janet interpreter */

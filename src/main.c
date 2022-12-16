@@ -178,21 +178,38 @@ HandleKeyboard(Game *game, const EVMULT_OUT *events)
 static void
 HandleMouse(Game *game, const EVMULT_OUT *events)
 {
-	char drag_marker = ' ';
+	/* Mouse was just pressed */
+	if (events->emo_mbutton && !game->mouse_is_down) {
+		game->mouse_is_down = true;
+		game->mouse_down_spot.p_x = events->emo_mouse.p_x;
+		game->mouse_down_spot.p_y = events->emo_mouse.p_y;
+	}
 
-	if (events->emo_mouse.p_x != game->prev_mouse.p_x || events->emo_mouse.p_y != game->prev_mouse.p_y) {
-		if (events->emo_mbutton) {
-			drag_marker = 'D';
+	/*
+	 * Mouse was just released -- draw the moving rect which indicates
+	 * draggings
+	 */
+	if (!events->emo_mbutton && game->mouse_is_down) {
+		game->mouse_is_down = false;
+		game->mouse_up_spot.p_x = events->emo_mouse.p_x;
+		game->mouse_up_spot.p_y = events->emo_mouse.p_y;
+
+		if ((game->mouse_down_spot.p_x != game->mouse_up_spot.p_x)
+			|| (game->mouse_down_spot.p_y != game->mouse_up_spot.p_y))
+		{
+			graf_movebox(
+				50, 50,
+				game->mouse_down_spot.p_x, game->mouse_down_spot.p_y,
+				game->mouse_up_spot.p_x, game->mouse_up_spot.p_y);
 		}
 	}
+
+	char drag_marker = game->mouse_is_down ? 'D' : ' ';
 
 	snprintf(game->debug_lines[2], GAME_DEBUGLINE_LEN,
 		"mx=%d my=%d mbutton=0x%02x [%c]     ",
 		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton, drag_marker);
 	v_gtext(game->workstation, 0, 24+24+6, game->debug_lines[2]);
-
-	game->prev_mouse.p_x = events->emo_mouse.p_x;
-	game->prev_mouse.p_y = events->emo_mouse.p_y;
 }
 
 

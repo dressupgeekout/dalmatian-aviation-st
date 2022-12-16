@@ -6,6 +6,7 @@
 #ifndef DALMATIANLIB_H
 #define DALMATIANLIB_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -68,9 +69,9 @@ typedef enum DefaultScreenChoice DefaultScreenChoice;
 struct Game {
 	int16_t workstation;
 	PXY maxpt;
-	PXY prev_mouse;
 	PXY mouse_down_spot;
 	PXY mouse_up_spot;
+	bool mouse_is_down;
 	int16_t money;
 	char debug_lines[GAME_DEBUGLINE_COUNT][GAME_DEBUGLINE_LEN];
 	AppStatus status;
