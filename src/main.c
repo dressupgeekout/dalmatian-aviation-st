@@ -153,7 +153,7 @@ DoTitleScreen(Game *game)
 static void
 HandleKeyboard(Game *game, const EVMULT_OUT *events)
 {
-	snprintf(game->debug_lines[1], sizeof(game->debug_lines[1]), "kreturn=%02x", events->emo_kreturn);
+	snprintf(game->debug_lines[1], GAME_DEBUGLINE_LEN, "kreturn=%02x", events->emo_kreturn);
 	v_gtext(game->workstation, 0, 12+24, game->debug_lines[1]);
 
 	uint8_t scancode = (events->emo_kreturn & 0xff00) >> 8;
@@ -186,7 +186,7 @@ HandleMouse(Game *game, const EVMULT_OUT *events)
 		}
 	}
 
-	snprintf(game->debug_lines[2], sizeof(game->debug_lines[2]),
+	snprintf(game->debug_lines[2], GAME_DEBUGLINE_LEN,
 		"mx=%d my=%d mbutton=0x%02x [%c]     ",
 		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton, drag_marker);
 	v_gtext(game->workstation, 0, 24+24+6, game->debug_lines[2]);
@@ -229,7 +229,7 @@ DoDefaultScreen(Game *game)
 	while (!done) {
 		evnt_multi_fast(&event_in, NULL, &event_out);
 
-		snprintf(game->debug_lines[0], sizeof(game->debug_lines[0]), "emo_events=0x%04x    ", event_out.emo_events);
+		snprintf(game->debug_lines[0], GAME_DEBUGLINE_LEN, "emo_events=0x%04x    ", event_out.emo_events);
 		v_gtext(game->workstation, 0, 12, game->debug_lines[0]);
 
 		if (event_out.emo_events & MU_KEYBD) {

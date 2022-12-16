@@ -61,6 +61,10 @@ typedef enum DefaultScreenChoice DefaultScreenChoice;
 /*
  * The whole game
  */
+
+#define GAME_DEBUGLINE_COUNT 4
+#define GAME_DEBUGLINE_LEN 128
+
 struct Game {
 	int16_t workstation;
 	PXY maxpt;
@@ -68,7 +72,7 @@ struct Game {
 	PXY mouse_down_spot;
 	PXY mouse_up_spot;
 	int16_t money;
-	char debug_lines[4][128];
+	char debug_lines[GAME_DEBUGLINE_COUNT][GAME_DEBUGLINE_LEN];
 	AppStatus status;
 	int16_t beat_index;
 	JanetTable *J;

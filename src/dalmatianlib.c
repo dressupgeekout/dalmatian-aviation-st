@@ -162,8 +162,8 @@ InitGame(void)
 	janet_cfuns(game->J, NULL, functions);
 
 	/* Initialize debug-lines */
-	for (int i = 0; i < 4; i++) {
-		snprintf(game->debug_lines[i], sizeof(game->debug_lines[i]), "%s", "");
+	for (int i = 0; i < GAME_DEBUGLINE_COUNT; i++) {
+		snprintf(game->debug_lines[i], GAME_DEBUGLINE_LEN, "%s", "");
 	}
 
 	/* Misc */
