@@ -1,14 +1,17 @@
 (defn krissany
-  [lines]
+  [lines &opt effects]
   {:speaker "KRISSANY"
-   :lines lines})
+   :lines lines
+   :effects effects})
 
 (defn whitney
-  [lines]
+  [lines &opt effects]
   {:speaker "WHITNEY"
-   :lines lines})
+   :lines lines
+   :effects effects})
 
 (def __BEATS__ [(krissany ["Hi!" "I am Krissany, I'm cool."])
                 (krissany ["Don't you think so?" ""])
                 (whitney ["...What? I wasn't paying attention." ""])
-                (krissany ["Of course you weren't, you silly dog." ""])])
+                (whitney ["Here's some money." ""] {:add-money 3000})
+                (krissany ["Wow, thanks!" "This will surely help me."])])

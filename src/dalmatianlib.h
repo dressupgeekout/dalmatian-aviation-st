@@ -93,7 +93,7 @@ void DeleteGame(Game *game);
 void UpdateFunds(const Game *game);
 
 void NextBeat(Game *game);
-void CharacterSay(const Game *game);
+void CharacterSay(Game *game);
 
 void LoadScript(Game *game, const char *path);
 void LoadDialogueScript(Game *game, const char *path);

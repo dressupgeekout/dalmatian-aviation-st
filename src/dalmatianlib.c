@@ -218,7 +218,7 @@ NextBeat(Game *game)
  * We should have already been advanced to the desired beat.
  */
 void
-CharacterSay(const Game *game)
+CharacterSay(Game *game)
 {
 	static char buf1[80]; 
 	static char buf2[80]; 
@@ -271,6 +271,18 @@ CharacterSay(const Game *game)
 			snprintf(errbuf, sizeof(errbuf),
 				"%s[beat %d|line %d is not a string|%d != %d][OK]", FA_ERROR, game->beat_index, i, JANET_STRING, janet_type(lines[i]));
 			return (void)form_alert(1, errbuf);
+		}
+	}
+
+	/* If there are effects with this beat, then resolve them now. */
+	Janet effects_w = janet_struct_get(beat, janet_ckeywordv("effects"));
+
+	if (janet_checktype(effects_w, JANET_STRUCT)) {
+		JanetStruct effects = janet_unwrap_struct(effects_w);
+		Janet add_money_effect = janet_struct_get(effects, janet_ckeywordv("add-money"));
+		if (janet_checktype(add_money_effect, JANET_NUMBER)) {
+			game->money += janet_unwrap_number(add_money_effect);
+			UpdateFunds(game);
 		}
 	}
 
