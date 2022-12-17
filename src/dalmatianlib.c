@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 #include <gem.h>
 
@@ -146,8 +145,7 @@ BlitYB(const Game *game, const char *path, int16_t x, int16_t y)
 Game *
 InitGame(void)
 {
-	Game *game = malloc(sizeof(Game));
-	bzero(game, sizeof(Game));
+	Game *game = calloc(1, sizeof(Game));
 
 	game->mouse_is_down = false;
 	game->beat_index = -1;
@@ -311,10 +309,9 @@ LoadScript(Game *game, const char *path)
 	fseek(fp, 0L, SEEK_END);
 	size_t script_length = ftell(fp) + 1;
 	rewind(fp);
-	char *script = malloc(script_length);
-	bzero(script, script_length);
+	char *script = calloc(1, script_length);
 	if (!script) {
-		(void)form_alert(1, FA_ERROR "[malloc() crash][OK]");
+		(void)form_alert(1, FA_ERROR "[calloc() crash][OK]");
 		return;
 	}
 	fread(script, 1, script_length, fp);

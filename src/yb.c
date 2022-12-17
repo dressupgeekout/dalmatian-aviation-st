@@ -41,7 +41,7 @@ YBFile_Open(const char *path, YBStatus *status)
 	}
 
 	/* Looks good -- get the metadata now */
-	YBFile *yb = malloc(sizeof(YBFile));
+	YBFile *yb = calloc(1, sizeof(YBFile));
 	if (!yb) {
 		fclose(fp);
 		*status = YB_ENOMEM;
@@ -54,7 +54,7 @@ YBFile_Open(const char *path, YBStatus *status)
 	uint32_t data_start = ftell(fp);
 	fseek(fp, 0L, SEEK_END);
 	uint32_t data_end = ftell(fp);
-	yb->data = malloc(data_end - data_start);
+	yb->data = calloc(1, data_end - data_start);
 	fseek(fp, data_start, SEEK_SET);
 	fread(yb->data, data_end-data_start, 1, fp);
 	fclose(fp);
