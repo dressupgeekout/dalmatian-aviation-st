@@ -236,12 +236,26 @@ CharacterSay(Game *game)
 	v_gtext(game->workstation, x, y2, buf2);
 
 	/* LOOTS of type-checking */
-	if (!janet_checktype(game->dialogue_tree[game->beat_index], JANET_STRUCT)) {
-		snprintf(errbuf, sizeof(errbuf), "%s[beat %d is not a struct][OK]", FA_ERROR, game->beat_index);
+	if (!janet_checktype(game->dialogue_tree[game->beat_index], JANET_FUNCTION)) {
+		snprintf(errbuf, sizeof(errbuf), "%s[beat %d is not a fn][OK]", FA_ERROR, game->beat_index);
 		return (void)form_alert(1, errbuf);
 	}
 
-	JanetStruct beat = janet_unwrap_struct(game->dialogue_tree[game->beat_index]);
+	JanetFunction *beatproc = janet_unwrap_function(game->dialogue_tree[game->beat_index]);
+	Janet beat_w;
+	JanetSignal signal = janet_pcall(beatproc, 0, NULL, &beat_w, NULL);
+
+	if (signal != JANET_SIGNAL_OK) {
+		snprintf(errbuf, sizeof(errbuf), "%s[beat %d fn is bad|signal=%d][OK]", FA_ERROR, game->beat_index, signal);
+		return (void)form_alert(1, errbuf);
+	}
+
+	if (!janet_checktype(beat_w, JANET_STRUCT)) {
+		snprintf(errbuf, sizeof(errbuf), "%s[beat %d didn't return a struct][OK]", FA_ERROR, game->beat_index);
+		return (void)form_alert(1, errbuf);
+	}
+
+	JanetStruct beat = janet_unwrap_struct(beat_w);
 	Janet speaker = janet_struct_get(beat, janet_ckeywordv("speaker"));
 	Janet lines_w = janet_struct_get(beat, janet_ckeywordv("lines"));
 

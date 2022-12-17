@@ -1,17 +1,18 @@
-(defn krissany
-  [lines &opt effects]
-  {:speaker "KRISSANY"
-   :lines lines
-   :effects effects})
+# Returns a function which returns the simplest possible beat-struct.
+(defn only-say
+  [character lines &opt effects]
+  (fn
+    [] 
+    {:speaker character
+     :lines lines
+     :effects effects}))
 
-(defn whitney
-  [lines &opt effects]
-  {:speaker "WHITNEY"
-   :lines lines
-   :effects effects})
+(def krissany "KRISSANY")
+(def whitney "WHITNEY")
 
-(def __BEATS__ [(krissany ["Hi!" "I am Krissany, I'm cool."])
-                (krissany ["Don't you think so?" ""])
-                (whitney ["...What? I wasn't paying attention." ""])
-                (whitney ["Here's some money." ""] {:add-money 3000})
-                (krissany ["Wow, thanks!" "This will surely help me."])])
+(def __BEATS__ [
+  (only-say krissany ["Hi!" "I am Krissany, I'm cool."])
+  (only-say krissany ["Don't you think so?" ""])
+  (only-say whitney ["...What? I wasn't paying attention." ""])
+  (only-say whitney ["Here's some money." ""] {:add-money 3000})
+  (only-say krissany ["Wow, thanks!" "This will surely help me."])])
