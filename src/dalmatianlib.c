@@ -208,7 +208,7 @@ NextBeat(Game *game)
 {
 	if (game->beat_index < (janet_tuple_length(game->dialogue_tree)-1)) {
 		game->beat_index++;
-		CharacterSay(game);
+		DoCurrentBeat(game);
 	}
 }
 
@@ -217,7 +217,7 @@ NextBeat(Game *game)
  * We should have already been advanced to the desired beat.
  */
 void
-CharacterSay(Game *game)
+DoCurrentBeat(Game *game)
 {
 	static char buf1[80]; 
 	static char buf2[80]; 
