@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include <gem.h>
 
@@ -311,6 +312,7 @@ LoadScript(Game *game, const char *path)
 	size_t script_length = ftell(fp) + 1;
 	rewind(fp);
 	char *script = malloc(script_length);
+	bzero(script, script_length);
 	if (!script) {
 		(void)form_alert(1, FA_ERROR "[malloc() crash][OK]");
 		return;
@@ -318,9 +320,7 @@ LoadScript(Game *game, const char *path)
 	fread(script, 1, script_length, fp);
 	fclose(fp);
 
-	/*
-	 * Read the script -- XXX it *ought* to return a function, which we pcall
-	 */
+	/* Read the script! */
 	Janet script_main;
 	int errflags = janet_dobytes(game->J, (const uint8_t *)script, script_length, path, &script_main);
 
@@ -337,17 +337,6 @@ LoadScript(Game *game, const char *path)
 	}
 
 	free(script);
-
-#if 0
-	/* Execute that function */
-	if (janet_checktype(script_main, JANET_FUNCTION)) {
-		JanetFunction *script_main_fn = NULL;
-		script_main_fn = janet_unwrap_function(script_main);
-		Janet rv = janet_call(script_main_fn, 0, NULL);
-	} else {
-		(void)form_alert(1, FA_ERROR "[script didn't return a function][OK]");
-	}
-#endif
 }
 
 
