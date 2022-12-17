@@ -271,10 +271,16 @@ DoDefaultScreen(Game *game)
 int
 main(void)
 {
-	Game *game = InitGame();
-
 	/* Init */
 	(void)appl_init();
+
+	Game *game = InitGame();
+
+	if (!game) {
+		(void)form_alert(1, FA_ERROR "[Couldn't alloc Game!!][OK]");
+		(void)appl_exit();
+		return EXIT_FAILURE;
+	}
 
 	/* Set up the virtual workstation */
 	int16_t work_in[16];

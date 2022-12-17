@@ -140,12 +140,17 @@ BlitYB(const Game *game, const char *path, int16_t x, int16_t y)
 
 
 /*
- * Initializes the Game struct
+ * Allocates and initializes the Game struct. Returns NULL in case of failure.
+ * You need to free the result with DeleteGame().
  */
 Game *
 InitGame(void)
 {
 	Game *game = calloc(1, sizeof(Game));
+
+	if (!game) {
+		return NULL;
+	}
 
 	game->mouse_is_down = false;
 	game->beat_index = -1;
