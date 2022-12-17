@@ -9,6 +9,7 @@
 #ifndef YB_H
 #define YB_H
 
+#include <stdint.h>
 #include <stdio.h>
 
 extern uint8_t YB_MAGIC[2];
