@@ -17,8 +17,8 @@
 /* ********** */
 
 /* Function prototypes */
-static bool EnforceHiRes(Game *game);
-static void DotsIntro(Game *game);
+static bool EnforceHiRes(const Game *game);
+static void DotsIntro(const Game *game);
 static TitleScreenChoice DoTitleScreen(Game *game);
 static DefaultScreenChoice DoDefaultScreen(Game *game);
 
@@ -31,7 +31,7 @@ static void HandleMouse(Game *game, const EVMULT_OUT *events);
  * Returns true if the user's monitor has the required specs, false otherwise.
  */
 static bool
-EnforceHiRes(Game *game)
+EnforceHiRes(const Game *game)
 {
 	const int16_t EXPECTED_MAXX = 640;
 	const int16_t EXPECTED_MAXY = 400;
@@ -56,7 +56,7 @@ EnforceHiRes(Game *game)
  * XXX all this data prolly belongs in its own header file
  */
 static void
-DotsIntro(Game *game)
+DotsIntro(const Game *game)
 {
 	(void)graf_mouse(M_OFF, NULL);
 
