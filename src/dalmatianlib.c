@@ -173,6 +173,8 @@ InitGame(void)
 
 	/* Misc */
 	game->money = 1000;
+	game->artifacts = NULL;
+	game->shelf = janet_array(GAME_MAX_SHELF);
 
 	return game;
 }
@@ -375,4 +377,43 @@ LoadDialogueScript(Game *game, const char *path)
 	} else {
 		(void)form_alert(1, FA_ERROR "[script has no def __BEATS__][OK]");
 	}
+}
+
+
+void
+LoadArtifactScript(Game *game, const char *path)
+{
+	LoadScript(game, path);
+	JanetBinding binding = janet_resolve_ext(game->J, janet_csymbol("__ARTIFACTS__"));
+
+	if (binding.type != JANET_BINDING_DEF) {
+		return (void)form_alert(1, FA_ERROR "[script has no def __ARTIFACTS__][OK]");
+	}
+
+	if (!janet_checktype(binding.value, JANET_TUPLE)) {
+		return (void)form_alert(1, FA_ERROR "[__ARTIFACTS__ is not an tuple][OK]");
+	}
+
+	game->artifacts = janet_unwrap_tuple(binding.value);
+	char buf[80];
+	snprintf(buf, sizeof(buf), "%s[loaded %d artifacts][OK]", FA_ERROR, janet_tuple_length(game->artifacts));
+	(void)form_alert(1, buf);
+}
+
+
+void
+AddToShelf(Game *game, uint8_t index)
+{
+	if (game->shelf->count >= GAME_MAX_SHELF) {
+		return (void)form_alert(1, FA_ERROR "[can't add any more to shelf!][OK]");
+	}
+
+	if (index >= janet_tuple_length(game->artifacts)) {
+		return (void)form_alert(1, FA_ERROR "[no such artifact][OK]");
+	}
+
+	janet_array_push(game->shelf, game->artifacts[index]);
+	char buf[80];
+	snprintf(buf, sizeof(buf), "%s[shelf has %d artifacts][OK]", FA_ERROR, game->shelf->count);
+	(void)form_alert(1, buf);
 }

@@ -166,6 +166,9 @@ HandleKeyboard(Game *game, const EVMULT_OUT *events)
 		UpdateFunds(game);
 	}
 		break;
+	case K_F5:
+		AddToShelf(game, 0);
+		break;
 	case K_F10:
 		game->status = APP_STATUS_WANT_QUIT;
 		break;
@@ -222,6 +225,8 @@ DoDefaultScreen(Game *game)
 
 	BlitYB(game, "GEARS2.YB", 25, 75);
 	UpdateFunds(game);
+
+	LoadArtifactScript(game, "ARTIF.JAN");
 
 	LoadDialogueScript(game, "TALK.JAN");
 

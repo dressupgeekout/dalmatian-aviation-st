@@ -65,6 +65,8 @@ typedef enum DefaultScreenChoice DefaultScreenChoice;
 
 #define GAME_DEBUGLINE_COUNT 4
 #define GAME_DEBUGLINE_LEN 128
+#define GAME_MAX_ARTIFACTS 32
+#define GAME_MAX_SHELF 16
 
 struct Game {
 	int16_t workstation;
@@ -78,6 +80,8 @@ struct Game {
 	int16_t beat_index;
 	JanetTable *J;
 	Janet *dialogue_tree;
+	JanetArray *shelf;
+	JanetTuple artifacts;
 };
 typedef struct Game Game;
 
@@ -97,5 +101,8 @@ void DoCurrentBeat(Game *game);
 
 void LoadScript(Game *game, const char *path);
 void LoadDialogueScript(Game *game, const char *path);
+void LoadArtifactScript(Game *game, const char *path);
+
+void AddToShelf(Game *game, uint8_t index);
 
 #endif /* DALMATIANLIB_H */

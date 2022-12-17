@@ -1,0 +1,46 @@
+(def REQ_ENGINE "ENGINE")
+(def REQ_GONDOLA "GONDOLA")
+(def REQ_HI_VISIBILITY "HIGH_VISIBILITY")
+(def REQ_LOWERWINGS "LOWERWINGS")
+(def REQ_LOW_VISIBILITY "LOW_VISIBILITY")
+(def REQ_PROP "PROPELLOR")
+(def REQ_UPPERWINGS "UPPERWINGS")
+(def REQ_WEAPON "WEAPON")
+(def REQ_WINGS "WINGS")
+
+(def OPT_DECAL "DECAL")
+
+(def MATERIAL_ALUMINUM "ALUMINUM")
+(def MATERIAL_GLASS "GLASS")
+(def MATERIAL_STEEL "STEEL")
+(def MATERIAL_TUNGSTEN "TUNGSTEN")
+(def MATERIAL_WOOD "WOOD")
+
+(defn make-artifact
+  [name material price satisfies weight]
+  {:name name
+   :material material
+   :price price
+   :satisfies satisfies
+   :weight weight})
+
+########## ########## ##########
+
+(def ARTIFACT_GLASS_WINDOW_PANE
+  (make-artifact "Glass Window Pane" MATERIAL_GLASS 100 [REQ_HI_VISIBILITY] 10))
+
+(def ARTIFACT_SKYROOT_PROPELLOR
+  (make-artifact "Skyroot Propellor" MATERIAL_WOOD 100 [REQ_PROP] 20))
+
+(def ARTIFACT_STEAM_ENGINE
+  (make-artifact "Steam Engine" MATERIAL_STEEL 100 [REQ_ENGINE] 50))
+
+(def ARTIFACT_GATLING_GUN
+  (make-artifact "Gatling Gun" MATERIAL_STEEL 100 [REQ_WEAPON] 100))
+
+########## ########## ##########
+
+(def __ARTIFACTS__ [ARTIFACT_GLASS_WINDOW_PANE
+                    ARTIFACT_SKYROOT_PROPELLOR
+                    ARTIFACT_STEAM_ENGINE
+                    ARTIFACT_GATLING_GUN])
