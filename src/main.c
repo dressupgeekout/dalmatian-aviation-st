@@ -319,15 +319,16 @@ main(void)
 	TitleScreenChoice choice;
 
 	if (want_intro) {
-		DotsIntro(game);
 		choice = DoTitleScreen(game);
 	} else {
 		choice = TITLE_SCREEN_WANT_PLAY;
 	}
 
 	switch (choice) {
-		case TITLE_SCREEN_WANT_PLAY:
+		case TITLE_SCREEN_WANT_PLAY: {
+			if (want_intro) DotsIntro(game);
 			DoDefaultScreen(game);
+		}
 			break;
 		case TITLE_SCREEN_WANT_QUIT:
 			; /* ignore, just quit */
