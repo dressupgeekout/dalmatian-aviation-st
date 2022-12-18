@@ -4,6 +4,7 @@
  */
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -465,16 +466,24 @@ LoadArtifactScript(Game *game, const char *path)
 void
 AddToShelf(Game *game, uint8_t artifact_index, uint8_t shelf_index)
 {
+	char buf[80];
+
 	if (game->shelf->count >= GAME_MAX_SHELF) {
 		return (void)form_alert(1, FA_ERROR "[can't add any more to shelf!][OK]");
 	}
 
 	if (artifact_index >= janet_tuple_length(game->artifacts)) {
-		return (void)form_alert(1, FA_ERROR "[no such artifact][OK]");
+		snprintf(buf, sizeof(buf), "%s[no such artifact %d][OK]", FA_ERROR, artifact_index);
+		return (void)form_alert(1, buf);
 	}
 
 	if (shelf_index >= game->shelf->capacity) {
-		return (void)form_alert(1, FA_ERROR "[can't put artifact in that slot!][OK]");
+		return (void)form_alert(1, FA_ERROR "[AddToShelf() impossible shelf-index][OK]");
+	}
+
+	if (ShelfSlotOccupied(game, shelf_index)) {
+		snprintf(buf, sizeof(buf), "%s[slot %d is already occupied][OK]", FA_ERROR, shelf_index);
+		return (void)form_alert(1, buf);
 	}
 
 	/*
@@ -482,11 +491,20 @@ AddToShelf(Game *game, uint8_t artifact_index, uint8_t shelf_index)
 	 * "prototype" and not an "instance"
 	 */
 	game->shelf->data[shelf_index] = game->artifacts[artifact_index];
-	char buf[80];
 	snprintf(buf, sizeof(buf), "%s[shelf slot %d has an artifact][OK]", FA_ERROR, shelf_index);
 	(void)form_alert(1, buf);
 
 	DrawShelvedArtifact(game, shelf_index);
+}
+
+
+/*
+ * Indicates whether the shelf has anything in the provided slot.
+ */
+bool
+ShelfSlotOccupied(const Game *game, uint8_t index)
+{
+	return janet_checktype(game->shelf->data[index], JANET_TABLE);
 }
 
 
@@ -496,29 +514,74 @@ AddToShelf(Game *game, uint8_t artifact_index, uint8_t shelf_index)
 void
 DrawShelvedArtifact(Game *game, uint8_t index)
 {
+	PXY *pos = ShelvedArtifactPos(game, index);
+	int16_t x = pos->p_x;
+	int16_t y = pos->p_y;
+	free(pos);
+
+	int16_t argv[] = { x, y, x+50, y+50 };
+	vsf_color(game->workstation, G_BLACK);
+	v_bar(game->workstation, argv);
+}
+
+
+/*
+ * Extracts the screen position of the artifact, or NULL in case of error. You
+ * need to free the result.
+ */
+PXY *
+ShelvedArtifactPos(const Game *game, uint8_t index)
+{
 	char buf[80];
 
 	if (index >= game->shelf->capacity) {
 		snprintf(buf, sizeof(buf), "%s[impossible shelf-index %d][OK]", FA_ERROR, index);
-		return (void)form_alert(1, buf);
+		(void)form_alert(1, buf);
+		return NULL;
 	}
 
-	/* Extract the screen position of the artifact */
 	JanetTable *artifact = janet_unwrap_table(game->shelf->data[index]);
 	Janet pos_w = janet_table_get(artifact, janet_ckeywordv("pos"));
 
 	if (!janet_checktype(pos_w, JANET_ARRAY)) {
 		snprintf(buf, sizeof(buf),
 			"%s[artifact pos is not an array?|type=%d][OK]", FA_ERROR, janet_type(pos_w));
-		return (void)form_alert(1, buf);
+		(void)form_alert(1, buf);
+		return NULL;
 	}
 
 	JanetArray *pos = janet_unwrap_array(pos_w);
-	int16_t x = janet_unwrap_integer(pos->data[0]);
-	int16_t y = janet_unwrap_integer(pos->data[1]);
+	PXY *pxy = calloc(1, sizeof(PXY));
+	if (!pxy) {
+		(void)form_alert(1, FA_ERROR "[can't calloc for PXY!][OK]");
+		return NULL;
+	}
+	pxy->p_x = janet_unwrap_integer(pos->data[0]);
+	pxy->p_y = janet_unwrap_integer(pos->data[1]);
+	return pxy;
+}
 
-	/* Draw it */
-	int16_t argv[] = { x, y, x+50, y+50 };
-	vsf_color(game->workstation, G_BLACK);
-	v_bar(game->workstation, argv);
+
+bool
+MouseIsOverArtifact(const Game *game, uint8_t index)
+{
+	if (!ShelfSlotOccupied(game, index)) {
+		return false;
+	}
+
+	PXY *pos = ShelvedArtifactPos(game, index);
+	if (!pos) {
+		return false;
+	}
+
+	int16_t art_x = pos->p_x;
+	int16_t art_y = pos->p_y;
+	free(pos);
+
+	/* XXX fake w and h */
+	int16_t art_maxx = art_x + 50;
+	int16_t art_maxy = art_y + 50;
+
+	return (game->mousepos.p_x >= art_x && game->mousepos.p_x <= art_maxx
+		&& game->mousepos.p_y >= art_y && game->mousepos.p_y <= art_maxy);
 }

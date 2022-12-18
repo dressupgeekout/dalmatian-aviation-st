@@ -180,6 +180,10 @@ HandleKeyboard(Game *game, const EVMULT_OUT *events)
 static void
 HandleMouse(Game *game, const EVMULT_OUT *events)
 {
+	/* Keep track of the mouse position always */
+	game->mousepos.p_x = events->emo_mouse.p_x;
+	game->mousepos.p_y = events->emo_mouse.p_y;
+
 	/* Mouse was just pressed */
 	if (events->emo_mbutton && !game->mouse_is_down) {
 		game->mouse_is_down = true;
@@ -207,10 +211,11 @@ HandleMouse(Game *game, const EVMULT_OUT *events)
 	}
 
 	char drag_marker = game->mouse_is_down ? 'D' : ' ';
+	char hover_marker = MouseIsOverArtifact(game, 0) ? 'H' : ' ';
 
 	snprintf(game->debug_lines[2], GAME_DEBUGLINE_LEN,
-		"mx=%d my=%d mbutton=0x%02x [%c]     ",
-		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton, drag_marker);
+		"mx=%d my=%d mbutton=0x%02x [%c] [%c]    ",
+		events->emo_mouse.p_x, events->emo_mouse.p_y, events->emo_mbutton, drag_marker, hover_marker);
 	v_gtext(game->workstation, 0, 24+24+6, game->debug_lines[2]);
 }
 

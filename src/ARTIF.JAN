@@ -23,7 +23,7 @@
     :price price
     :satisfies satisfies
     :weight weight
-    :pos @[0 0]})
+    :pos @[200 200]})
 
 ########## ########## ##########
 
