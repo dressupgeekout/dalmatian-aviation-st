@@ -221,13 +221,14 @@ DoDefaultScreen(Game *game)
 {
 	Whiteout(game);
 
+	UpdateStatus(game, "Loading test script...");
 	LoadScript(game, "TEST.JAN");
+	ClearStatus(game);
 
 	BlitYB(game, "GEARS2.YB", 25, 75);
 	UpdateFunds(game);
 
 	LoadArtifactScript(game, "ARTIF.JAN");
-
 	LoadDialogueScript(game, "TALK.JAN");
 
 	/*

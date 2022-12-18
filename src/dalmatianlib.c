@@ -170,6 +170,7 @@ InitGame(void)
 	for (int i = 0; i < GAME_DEBUGLINE_COUNT; i++) {
 		snprintf(game->debug_lines[i], GAME_DEBUGLINE_LEN, "%s", "");
 	}
+	snprintf(game->status_line, sizeof(game->status_line), "%s", "");
 
 	/* Misc */
 	game->money = 1000;
@@ -185,6 +186,40 @@ DeleteGame(Game *game)
 {
 	janet_deinit();
 	free(game);
+}
+
+
+/*
+ * Replace the status-line with the given string.
+ */
+void
+UpdateStatus(Game *game, const char *status)
+{
+	ClearStatus(game);
+	snprintf(game->status_line, sizeof(game->status_line), "%s", status);
+	DisplayStatus(game);
+}
+
+
+/*
+ * Deletes the status-line contents.
+ */
+void ClearStatus(Game *game)
+{
+	uint8_t prev_line_length = strlen(game->status_line);
+	for (int i = 0; i < prev_line_length; i++) {
+		game->status_line[i] = ' ';
+	}
+	DisplayStatus(game);
+}
+
+
+/*
+ * Actually print the status-line on the screen.
+ */
+void DisplayStatus(Game *game)
+{
+	v_gtext(game->workstation, 0, game->maxpt.p_y-6, game->status_line);
 }
 
 
@@ -361,7 +396,9 @@ LoadScript(Game *game, const char *path)
 void
 LoadDialogueScript(Game *game, const char *path)
 {
+	UpdateStatus(game, "Loading dialogue...");
 	LoadScript(game, path);
+	ClearStatus(game);
 
 	JanetBinding binding = janet_resolve_ext(game->J, janet_csymbol("__BEATS__"));
 
@@ -383,7 +420,10 @@ LoadDialogueScript(Game *game, const char *path)
 void
 LoadArtifactScript(Game *game, const char *path)
 {
+	UpdateStatus(game, "Loading artifacts...");
 	LoadScript(game, path);
+	ClearStatus(game);
+
 	JanetBinding binding = janet_resolve_ext(game->J, janet_csymbol("__ARTIFACTS__"));
 
 	if (binding.type != JANET_BINDING_DEF) {

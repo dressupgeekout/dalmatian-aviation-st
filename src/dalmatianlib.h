@@ -76,6 +76,7 @@ struct Game {
 	bool mouse_is_down;
 	int16_t money;
 	char debug_lines[GAME_DEBUGLINE_COUNT][GAME_DEBUGLINE_LEN];
+	char status_line[80];
 	AppStatus status;
 	int16_t beat_index;
 	JanetTable *J;
@@ -94,6 +95,11 @@ void BlitYB(const Game *game, const char *path, int16_t x, int16_t y);
 
 Game *InitGame(void);
 void DeleteGame(Game *game);
+
+void UpdateStatus(Game *game, const char *status);
+void ClearStatus(Game *game);
+void DisplayStatus(Game *game);
+
 void UpdateFunds(const Game *game);
 
 void NextBeat(Game *game);
