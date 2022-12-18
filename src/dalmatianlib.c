@@ -173,7 +173,7 @@ InitGame(void)
 	snprintf(game->status_line, sizeof(game->status_line), "%s", "");
 
 	/* Misc */
-	game->money = 1000;
+	game->money = 0;
 	game->artifacts = NULL;
 	game->shelf = janet_array(GAME_MAX_SHELF);
 
@@ -224,9 +224,31 @@ void DisplayStatus(Game *game)
 
 
 /*
+ * Explicitly sets the player's money to the given amount.
+ */
+void
+SetFunds(Game *game, int16_t amount)
+{
+	game->money = amount;
+	DisplayFunds(game);
+}
+
+
+/*
+ * Increments or decrements the player's money by the given amount.
+ */
+void
+UpdateFunds(Game *game, int16_t amount)
+{
+	game->money += amount;
+	DisplayFunds(game);
+}
+
+
+/*
  * Displays the amount of money the player has.
  */
-void UpdateFunds(const Game *game)
+void DisplayFunds(const Game *game)
 {
 	static char buf[16];
 	const int16_t x = game->maxpt.p_x - 100;
@@ -336,8 +358,7 @@ DoCurrentBeat(Game *game)
 		JanetStruct effects = janet_unwrap_struct(effects_w);
 		Janet add_money_effect = janet_struct_get(effects, janet_ckeywordv("add-money"));
 		if (janet_checktype(add_money_effect, JANET_NUMBER)) {
-			game->money += janet_unwrap_number(add_money_effect);
-			UpdateFunds(game);
+			UpdateFunds(game, janet_unwrap_number(add_money_effect));
 		}
 	}
 

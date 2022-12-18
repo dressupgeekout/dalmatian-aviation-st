@@ -162,8 +162,7 @@ HandleKeyboard(Game *game, const EVMULT_OUT *events)
 	case K_SPACE:
 	{
 		NextBeat(game);
-		game->money -= 15;
-		UpdateFunds(game);
+		UpdateFunds(game, -15);
 	}
 		break;
 	case K_F5:
@@ -226,7 +225,7 @@ DoDefaultScreen(Game *game)
 	ClearStatus(game);
 
 	BlitYB(game, "GEARS2.YB", 25, 75);
-	UpdateFunds(game);
+	SetFunds(game, 1000);
 
 	LoadArtifactScript(game, "ARTIF.JAN");
 	LoadDialogueScript(game, "TALK.JAN");

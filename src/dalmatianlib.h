@@ -100,7 +100,9 @@ void UpdateStatus(Game *game, const char *status);
 void ClearStatus(Game *game);
 void DisplayStatus(Game *game);
 
-void UpdateFunds(const Game *game);
+void SetFunds(Game *game, int16_t amount);
+void UpdateFunds(Game *game, int16_t amount);
+void DisplayFunds(const Game *game);
 
 void NextBeat(Game *game);
 void DoCurrentBeat(Game *game);
