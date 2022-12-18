@@ -18,11 +18,12 @@
 
 (defn make-artifact
   [name material price satisfies weight]
-  {:name name
-   :material material
-   :price price
-   :satisfies satisfies
-   :weight weight})
+  @{:name name
+    :material material
+    :price price
+    :satisfies satisfies
+    :weight weight
+    :pos @[0 0]})
 
 ########## ########## ##########
 

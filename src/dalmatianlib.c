@@ -463,18 +463,62 @@ LoadArtifactScript(Game *game, const char *path)
 
 
 void
-AddToShelf(Game *game, uint8_t index)
+AddToShelf(Game *game, uint8_t artifact_index, uint8_t shelf_index)
 {
 	if (game->shelf->count >= GAME_MAX_SHELF) {
 		return (void)form_alert(1, FA_ERROR "[can't add any more to shelf!][OK]");
 	}
 
-	if (index >= janet_tuple_length(game->artifacts)) {
+	if (artifact_index >= janet_tuple_length(game->artifacts)) {
 		return (void)form_alert(1, FA_ERROR "[no such artifact][OK]");
 	}
 
-	janet_array_push(game->shelf, game->artifacts[index]);
+	if (shelf_index >= game->shelf->capacity) {
+		return (void)form_alert(1, FA_ERROR "[can't put artifact in that slot!][OK]");
+	}
+
+	/*
+	 * XXX prolly should make a copy of the artifact, since it is a
+	 * "prototype" and not an "instance"
+	 */
+	game->shelf->data[shelf_index] = game->artifacts[artifact_index];
 	char buf[80];
-	snprintf(buf, sizeof(buf), "%s[shelf has %d artifacts][OK]", FA_ERROR, game->shelf->count);
+	snprintf(buf, sizeof(buf), "%s[shelf slot %d has an artifact][OK]", FA_ERROR, shelf_index);
 	(void)form_alert(1, buf);
+
+	DrawShelvedArtifact(game, shelf_index);
+}
+
+
+/*
+ * XXX In reality, the artifact's appearance will be a quad on a spritesheet
+ */
+void
+DrawShelvedArtifact(Game *game, uint8_t index)
+{
+	char buf[80];
+
+	if (index >= game->shelf->capacity) {
+		snprintf(buf, sizeof(buf), "%s[impossible shelf-index %d][OK]", FA_ERROR, index);
+		return (void)form_alert(1, buf);
+	}
+
+	/* Extract the screen position of the artifact */
+	JanetTable *artifact = janet_unwrap_table(game->shelf->data[index]);
+	Janet pos_w = janet_table_get(artifact, janet_ckeywordv("pos"));
+
+	if (!janet_checktype(pos_w, JANET_ARRAY)) {
+		snprintf(buf, sizeof(buf),
+			"%s[artifact pos is not an array?|type=%d][OK]", FA_ERROR, janet_type(pos_w));
+		return (void)form_alert(1, buf);
+	}
+
+	JanetArray *pos = janet_unwrap_array(pos_w);
+	int16_t x = janet_unwrap_integer(pos->data[0]);
+	int16_t y = janet_unwrap_integer(pos->data[1]);
+
+	/* Draw it */
+	int16_t argv[] = { x, y, x+50, y+50 };
+	vsf_color(game->workstation, G_BLACK);
+	v_bar(game->workstation, argv);
 }

@@ -166,7 +166,7 @@ HandleKeyboard(Game *game, const EVMULT_OUT *events)
 	}
 		break;
 	case K_F5:
-		AddToShelf(game, 0);
+		AddToShelf(game, 0, 0);
 		break;
 	case K_F10:
 		game->status = APP_STATUS_WANT_QUIT;
@@ -224,7 +224,6 @@ DoDefaultScreen(Game *game)
 	LoadScript(game, "TEST.JAN");
 	ClearStatus(game);
 
-	BlitYB(game, "GEARS2.YB", 25, 75);
 	SetFunds(game, 1000);
 
 	LoadArtifactScript(game, "ARTIF.JAN");

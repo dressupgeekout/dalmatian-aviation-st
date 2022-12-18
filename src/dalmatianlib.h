@@ -111,6 +111,7 @@ void LoadScript(Game *game, const char *path);
 void LoadDialogueScript(Game *game, const char *path);
 void LoadArtifactScript(Game *game, const char *path);
 
-void AddToShelf(Game *game, uint8_t index);
+void AddToShelf(Game *game, uint8_t artifact_index, uint8_t shelf_index);
+void DrawShelvedArtifact(Game *game, uint8_t index);
 
 #endif /* DALMATIANLIB_H */
